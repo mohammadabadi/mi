@@ -1,0 +1,31 @@
+import bcrypt from 'bcryptjs'
+import { eq } from 'drizzle-orm'
+import { registerSchema } from '../../../shared/schemas/finance'
+import { users } from '../../database/schema'
+
+export default defineEventHandler(async (event) => {
+  const body = await readSchemaBody(event, registerSchema)
+  const db = useDb()
+  const [existing] = await db.select({ id: users.id }).from(users).where(eq(users.email, body.email)).limit(1)
+
+  if (existing) {
+    throw createError({ statusCode: 409, statusMessage: 'این ایمیل قبلاً ثبت شده است.' })
+  }
+
+  const passwordHash = await bcrypt.hash(body.password, 12)
+  const [user] = await db.insert(users).values({
+    name: body.name,
+    email: body.email,
+    passwordHash
+  }).returning({ id: users.id, name: users.name, email: users.email })
+
+  if (!user) throw createError({ statusCode: 500, statusMessage: 'ثبت‌نام ناموفق بود.' })
+
+  await Promise.all([
+    seedDefaultCategories(user.id),
+    seedDefaultAccount(user.id)
+  ])
+  await setUserSession(event, user.id)
+
+  return { user }
+})

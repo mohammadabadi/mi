@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="MiFin">
+  <rect width="512" height="512" fill="#0f172a"/>
+  <rect x="116" y="112" width="280" height="288" rx="52" fill="#ffffff"/>
+  <path d="M180 220h152M180 276h104M180 332h152" stroke="#0f172a" stroke-width="34" stroke-linecap="round"/>
+  <path d="M352 124v104H248" stroke="#14b8a6" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

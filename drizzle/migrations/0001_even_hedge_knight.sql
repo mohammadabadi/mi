@@ -1,0 +1,1 @@
+ALTER TABLE "accounts" ALTER COLUMN "initial_balance_minor" SET DEFAULT 0;
