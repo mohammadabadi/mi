@@ -12,12 +12,6 @@ The UI is mobile-first and includes PWA support, so the app can be installed on 
 npm install
 ```
 
-## Environment
-
-```bash
-cp .env.example .env
-```
-
 Variables:
 
 - `DATABASE_URL`: Supabase PostgreSQL connection string, including SSL.
