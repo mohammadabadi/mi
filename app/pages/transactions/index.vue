@@ -40,12 +40,15 @@ interface CategoryItem {
 
 interface TransactionItem {
   id: string
-  type: 'income' | 'expense'
+  kind?: 'transaction' | 'transfer'
+  type: 'income' | 'expense' | 'transfer'
   amountMinor: string
   description: string
   date: string
   accountName: string
   categoryName: string
+  fromAccountName?: string
+  toAccountName?: string
 }
 
 const accounts = computed(() => (accountsData.value?.accounts ?? []) as unknown as AccountItem[])
@@ -75,6 +78,8 @@ const transferForm = reactive({
 })
 const error = ref('')
 const success = ref('')
+const transactionSubmitting = ref(false)
+const transferSubmitting = ref(false)
 
 const filteredCategories = computed(() => categories.value.filter((category) => category.type === transactionForm.type))
 const categoryOptions = computed(() => filteredCategories.value.map((category) => ({ value: category.id, label: category.name })))
@@ -152,8 +157,11 @@ function resetFilters() {
 }
 
 async function createTransaction() {
+  if (transactionSubmitting.value) return
+
   error.value = ''
   success.value = ''
+  transactionSubmitting.value = true
   try {
     await $fetch('/api/transactions', { method: 'POST', body: transactionForm })
     transactionForm.amountMinor = ''
@@ -162,12 +170,17 @@ async function createTransaction() {
     await refresh()
   } catch (err) {
     error.value = err instanceof Error ? err.message : 'ثبت تراکنش ناموفق بود.'
+  } finally {
+    transactionSubmitting.value = false
   }
 }
 
 async function createTransfer() {
+  if (transferSubmitting.value) return
+
   error.value = ''
   success.value = ''
+  transferSubmitting.value = true
   try {
     await $fetch('/api/transfers', { method: 'POST', body: transferForm })
     transferForm.amountMinor = ''
@@ -176,6 +189,8 @@ async function createTransfer() {
     await refresh()
   } catch (err) {
     error.value = err instanceof Error ? err.message : 'ثبت انتقال ناموفق بود.'
+  } finally {
+    transferSubmitting.value = false
   }
 }
 
@@ -235,8 +250,8 @@ async function removeTransaction(id: string) {
             <input v-model="transactionForm.description" class="field mt-2" placeholder="مثلاً سوپرمارکت">
           </label>
         </div>
-        <button class="btn-primary w-full">
-          <UIcon name="i-lucide-plus" class="btn-icon" />
+        <button class="btn-primary w-full disabled:cursor-not-allowed disabled:opacity-75" :disabled="transactionSubmitting">
+          <UIcon :name="transactionSubmitting ? 'i-lucide-loader-circle' : 'i-lucide-plus'" class="btn-icon" :class="{ 'animate-spin': transactionSubmitting }" />
           <span>ثبت تراکنش</span>
         </button>
       </form>
@@ -260,8 +275,8 @@ async function removeTransaction(id: string) {
           <span class="text-sm font-medium">شرح</span>
           <input v-model="transferForm.description" class="field mt-2" placeholder="مثلاً انتقال به کیف پول">
         </label>
-        <button class="btn-primary w-full bg-cyan-700">
-          <UIcon name="i-lucide-arrow-left-right" class="btn-icon" />
+        <button class="btn-primary w-full bg-cyan-700 disabled:cursor-not-allowed disabled:opacity-75" :disabled="transferSubmitting">
+          <UIcon :name="transferSubmitting ? 'i-lucide-loader-circle' : 'i-lucide-arrow-left-right'" class="btn-icon" :class="{ 'animate-spin': transferSubmitting }" />
           <span>ثبت انتقال</span>
         </button>
       </form>
@@ -352,10 +367,10 @@ async function removeTransaction(id: string) {
               <p class="mt-1 text-xs text-slate-400">{{ date(transaction.date) }}</p>
             </div>
             <div class="shrink-0 text-left">
-              <div class="money-value font-black" :class="transaction.type === 'income' ? 'text-emerald-700' : 'text-rose-700'">
-                {{ transaction.type === 'income' ? '+' : '-' }}{{ money(transaction.amountMinor) }}
+              <div class="money-value font-black" :class="transaction.type === 'income' ? 'text-emerald-700' : transaction.type === 'transfer' ? 'text-cyan-700' : 'text-rose-700'">
+                {{ transaction.type === 'income' ? '+' : transaction.type === 'transfer' ? '' : '-' }}{{ money(transaction.amountMinor) }}
               </div>
-              <button class="icon-danger-button mt-3 ms-auto" type="button" aria-label="حذف تراکنش" title="حذف تراکنش" @click="transaction.id && removeTransaction(transaction.id)">
+              <button v-if="transaction.type !== 'transfer'" class="icon-danger-button mt-3 ms-auto" type="button" aria-label="حذف تراکنش" title="حذف تراکنش" @click="transaction.id && removeTransaction(transaction.id)">
                 <UIcon name="i-lucide-trash-2" class="size-4" />
               </button>
             </div>
@@ -383,12 +398,12 @@ async function removeTransaction(id: string) {
               <td class="p-3">{{ transaction.description || '-' }}</td>
               <td class="p-3">{{ transaction.categoryName }}</td>
               <td class="p-3">{{ transaction.accountName }}</td>
-              <td class="p-3">{{ transaction.type === 'income' ? 'درآمد' : 'هزینه' }}</td>
-              <td class="money-value p-3 font-bold" :class="transaction.type === 'income' ? 'text-emerald-700' : 'text-rose-700'">
-                {{ transaction.type === 'income' ? '+' : '-' }}{{ money(transaction.amountMinor) }}
+              <td class="p-3">{{ transaction.type === 'transfer' ? 'انتقال' : transaction.type === 'income' ? 'درآمد' : 'هزینه' }}</td>
+              <td class="money-value p-3 font-bold" :class="transaction.type === 'income' ? 'text-emerald-700' : transaction.type === 'transfer' ? 'text-cyan-700' : 'text-rose-700'">
+                {{ transaction.type === 'income' ? '+' : transaction.type === 'transfer' ? '' : '-' }}{{ money(transaction.amountMinor) }}
               </td>
               <td class="p-3">
-                <button class="inline-flex items-center gap-1 rounded-md border border-slate-300 px-3 py-1" @click="transaction.id && removeTransaction(transaction.id)">
+                <button v-if="transaction.type !== 'transfer'" class="inline-flex items-center gap-1 rounded-md border border-slate-300 px-3 py-1" @click="transaction.id && removeTransaction(transaction.id)">
                   <UIcon name="i-lucide-trash-2" class="size-4" />
                   <span>حذف</span>
                 </button>
