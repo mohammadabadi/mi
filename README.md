@@ -43,13 +43,6 @@ npm run db:push
 npm run db:seed
 ```
 
-Demo credentials after seeding:
-
-```text
-demo@mifin.local
-password123
-```
-
 ## Development
 
 ```bash
