@@ -29,7 +29,7 @@ export function canManageGroup(role: string) {
 
 export async function createNotification(input: {
   userId: string
-  type: 'group_invite' | 'group_expense' | 'share_paid'
+  type: 'group_invite' | 'group_expense' | 'share_paid' | 'card_shared'
   title: string
   body?: string
   data?: Record<string, unknown>

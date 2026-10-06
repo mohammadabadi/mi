@@ -1,4 +1,4 @@
-import { and, ilike, ne, or } from 'drizzle-orm'
+import { and, eq, ilike, ne } from 'drizzle-orm'
 import { normalizePhone, userSearchSchema } from '../../../shared/schemas/finance'
 import { users } from '../../database/schema'
 
@@ -7,7 +7,15 @@ export default defineEventHandler(async (event) => {
   const query = parseSchemaQuery(event, userSearchSchema)
   const db = useDb()
   const normalizedPhone = normalizePhone(query.q)
-  const search = `%${query.q}%`
+  const q = query.q.trim().toLowerCase()
+
+  const contactFilter = /^09\d{9}$/.test(normalizedPhone)
+    ? eq(users.phone, normalizedPhone)
+    : q.includes('@') && q.length >= 5
+      ? ilike(users.email, `%${q}%`)
+      : undefined
+
+  if (!contactFilter) return { users: [] }
 
   const rows = await db
     .select({
@@ -19,11 +27,7 @@ export default defineEventHandler(async (event) => {
     .from(users)
     .where(and(
       ne(users.id, user.id),
-      or(
-        ilike(users.name, search),
-        ilike(users.email, search),
-        ilike(users.phone, `%${normalizedPhone}%`)
-      )
+      contactFilter
     ))
     .limit(10)
 

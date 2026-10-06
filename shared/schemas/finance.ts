@@ -37,6 +37,9 @@ const loginIdentifierSchema = z.string()
 const positiveMinorUnit = z.string().trim().regex(/^\d+$/, 'مبلغ باید عدد صحیح مثبت باشد').refine((value) => BigInt(value) > BigInt(0), 'مبلغ باید مثبت باشد')
 const nonNegativeMinorUnit = z.string().trim().regex(/^\d+$/, 'مبلغ باید عدد صحیح باشد')
 const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'تاریخ باید میلادی و با قالب YYYY-MM-DD باشد')
+const bankCardSchema = z.string()
+  .transform((value) => toEnglishDigits(value).replace(/[\s-]/g, ''))
+  .refine((value) => /^\d{16}$/.test(value), 'شماره کارت باید ۱۶ رقمی باشد')
 
 export const registerSchema = z.object({
   name: z.string().trim().min(2).max(80),
@@ -126,6 +129,20 @@ export const groupExpenseCreateSchema = z.object({
     userId: z.string().uuid(),
     amountMinor: positiveMinorUnit
   })).max(30).optional().default([])
+})
+
+export const groupExpenseSharesUpdateSchema = z.object({
+  splitMode: z.enum(['equal', 'custom']).default('equal'),
+  participantIds: z.array(z.string().uuid()).min(1).max(30),
+  shares: z.array(z.object({
+    userId: z.string().uuid(),
+    amountMinor: positiveMinorUnit
+  })).max(30).optional().default([])
+})
+
+export const groupExpenseCardSchema = z.object({
+  cardNumber: bankCardSchema,
+  note: z.string().trim().max(160).optional().default('')
 })
 
 export const groupSharePaySchema = z.object({

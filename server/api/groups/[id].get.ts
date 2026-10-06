@@ -1,4 +1,4 @@
-import { and, desc, eq, sql } from 'drizzle-orm'
+import { and, desc, eq, inArray, sql } from 'drizzle-orm'
 import { groupExpenseShares, groupExpenses, groupMembers, groups, users } from '../../database/schema'
 
 export default defineEventHandler(async (event) => {
@@ -30,9 +30,12 @@ export default defineEventHandler(async (event) => {
       title: groupExpenses.title,
       description: groupExpenses.description,
       amountMinor: groupExpenses.amountMinor,
+      payerCardNumber: groupExpenses.payerCardNumber,
+      payerCardNote: groupExpenses.payerCardNote,
       date: groupExpenses.date,
       splitMode: groupExpenses.splitMode,
       payerId: groupExpenses.payerId,
+      creatorId: groupExpenses.creatorId,
       payerName: users.name,
       myShareId: sql<string>`max(case when ${groupExpenseShares.userId} = ${user.id} then ${groupExpenseShares.id}::text else null end)`,
       myShareMinor: sql<string>`coalesce(sum(case when ${groupExpenseShares.userId} = ${user.id} then ${groupExpenseShares.amountMinor} else 0 end), 0)`,
@@ -47,6 +50,36 @@ export default defineEventHandler(async (event) => {
     .where(eq(groupExpenses.groupId, groupId))
     .groupBy(groupExpenses.id, users.name)
     .orderBy(desc(groupExpenses.date), desc(groupExpenses.createdAt))
+
+  const expenseIds = expenses.map((expense) => expense.id)
+  const shareRows = expenseIds.length
+    ? await db
+      .select({
+        id: groupExpenseShares.id,
+        expenseId: groupExpenseShares.expenseId,
+        userId: groupExpenseShares.userId,
+        userName: users.name,
+        amountMinor: groupExpenseShares.amountMinor,
+        status: groupExpenseShares.status,
+        note: groupExpenseShares.note,
+        paidAt: groupExpenseShares.paidAt
+      })
+      .from(groupExpenseShares)
+      .innerJoin(users, eq(users.id, groupExpenseShares.userId))
+      .where(inArray(groupExpenseShares.expenseId, expenseIds))
+    : []
+
+  type ShareRow = typeof shareRows[number]
+  const sharesByExpense = shareRows.reduce<Record<string, ShareRow[]>>((acc, share) => {
+    acc[share.expenseId] ??= []
+    acc[share.expenseId]!.push(share)
+    return acc
+  }, {})
+
+  const expensesWithShares = expenses.map((expense) => ({
+    ...expense,
+    shares: sharesByExpense[expense.id] ?? []
+  }))
 
   const balances = await db
     .select({
@@ -65,7 +98,7 @@ export default defineEventHandler(async (event) => {
   return {
     group: serializeRow({ ...group, role: member.role }),
     members: serializeRows(members),
-    expenses: serializeRows(expenses),
+    expenses: serializeRows(expensesWithShares),
     balances: serializeRows(balances)
   }
 })

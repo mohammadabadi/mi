@@ -1,10 +1,10 @@
-import { and, eq, inArray } from 'drizzle-orm'
+import { eq, inArray } from 'drizzle-orm'
 import { groupExpenseCreateSchema } from '../../../../../shared/schemas/finance'
 import { groupExpenseShares, groupExpenses, groupMembers, groups, users } from '../../../../database/schema'
 
 export default defineEventHandler(async (event) => {
   const groupId = getRouterParam(event, 'id') ?? ''
-  await requireGroupMember(event, groupId)
+  const { user } = await requireGroupMember(event, groupId)
   const body = await readSchemaBody(event, groupExpenseCreateSchema)
   const db = useDb()
 
@@ -15,45 +15,15 @@ export default defineEventHandler(async (event) => {
     .where(eq(groupMembers.groupId, groupId))
 
   const memberIds = new Set(memberRows.map((member) => member.userId))
-  const participantIds = [...new Set(body.participantIds)]
-
-  if (!memberIds.has(body.payerId) || participantIds.some((id) => !memberIds.has(id))) {
-    throw createError({ statusCode: 400, statusMessage: 'پرداخت‌کننده و افراد دنگ باید عضو گروه باشند.' })
-  }
-
   const amount = BigInt(body.amountMinor)
-  let shares: Array<{ userId: string; amountMinor: bigint; status: 'pending' | 'paid' }>
-
-  if (body.splitMode === 'equal') {
-    const count = BigInt(participantIds.length)
-    const baseShare = amount / count
-    let remainder = amount % count
-    shares = participantIds.map((userId) => {
-      const extra = remainder > BigInt(0) ? BigInt(1) : BigInt(0)
-      remainder -= extra
-      return {
-        userId,
-        amountMinor: baseShare + extra,
-        status: userId === body.payerId ? 'paid' : 'pending'
-      }
-    })
-  } else {
-    if (!body.shares.length) throw createError({ statusCode: 400, statusMessage: 'برای تقسیم سفارشی سهم افراد را وارد کنید.' })
-    const shareUserIds = new Set(body.shares.map((share) => share.userId))
-    if (body.shares.some((share) => !memberIds.has(share.userId))) {
-      throw createError({ statusCode: 400, statusMessage: 'همه افراد سهم باید عضو گروه باشند.' })
-    }
-    if (participantIds.some((id) => !shareUserIds.has(id))) {
-      throw createError({ statusCode: 400, statusMessage: 'برای همه افراد انتخاب‌شده سهم وارد کنید.' })
-    }
-    const sum = body.shares.reduce((total, share) => total + BigInt(share.amountMinor), BigInt(0))
-    if (sum !== amount) throw createError({ statusCode: 400, statusMessage: 'جمع سهم‌ها باید دقیقاً برابر مبلغ کل باشد.' })
-    shares = body.shares.map((share) => ({
-      userId: share.userId,
-      amountMinor: BigInt(share.amountMinor),
-      status: share.userId === body.payerId ? 'paid' : 'pending'
-    }))
-  }
+  const shares = buildExpenseShares({
+    splitMode: body.splitMode,
+    amountMinor: amount,
+    payerId: body.payerId,
+    participantIds: body.participantIds,
+    shares: body.shares,
+    memberIds
+  })
 
   const [group] = await db.select({ name: groups.name }).from(groups).where(eq(groups.id, groupId)).limit(1)
   const [payer] = await db.select({ name: users.name }).from(users).where(eq(users.id, body.payerId)).limit(1)
@@ -62,6 +32,7 @@ export default defineEventHandler(async (event) => {
     const [created] = await tx.insert(groupExpenses).values({
       groupId,
       payerId: body.payerId,
+      creatorId: user.id,
       title: body.title,
       description: body.description,
       amountMinor: amount,

@@ -8,7 +8,7 @@ export const groupRole = pgEnum('group_role', ['owner', 'admin', 'member'])
 export const groupInvitationStatus = pgEnum('group_invitation_status', ['pending', 'accepted', 'rejected'])
 export const groupExpenseSplitMode = pgEnum('group_expense_split_mode', ['equal', 'custom'])
 export const groupShareStatus = pgEnum('group_share_status', ['pending', 'paid'])
-export const notificationType = pgEnum('notification_type', ['group_invite', 'group_expense', 'share_paid'])
+export const notificationType = pgEnum('notification_type', ['group_invite', 'group_expense', 'share_paid', 'card_shared'])
 
 export const users = pgTable('users', {
   id: uuid('id').defaultRandom().primaryKey(),
@@ -136,9 +136,12 @@ export const groupExpenses = pgTable('group_expenses', {
   id: uuid('id').defaultRandom().primaryKey(),
   groupId: uuid('group_id').notNull().references(() => groups.id, { onDelete: 'cascade' }),
   payerId: uuid('payer_id').notNull().references(() => users.id, { onDelete: 'restrict' }),
+  creatorId: uuid('creator_id').notNull().references(() => users.id, { onDelete: 'restrict' }),
   title: varchar('title', { length: 120 }).notNull(),
   description: varchar('description', { length: 240 }).notNull().default(''),
   amountMinor: bigint('amount_minor', { mode: 'bigint' }).notNull(),
+  payerCardNumber: varchar('payer_card_number', { length: 19 }),
+  payerCardNote: varchar('payer_card_note', { length: 160 }).notNull().default(''),
   date: date('date').notNull(),
   splitMode: groupExpenseSplitMode('split_mode').notNull().default('equal'),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
@@ -146,6 +149,7 @@ export const groupExpenses = pgTable('group_expenses', {
 }, (table) => ({
   groupIdx: index('group_expenses_group_id_idx').on(table.groupId),
   payerIdx: index('group_expenses_payer_id_idx').on(table.payerId),
+  creatorIdx: index('group_expenses_creator_id_idx').on(table.creatorId),
   dateIdx: index('group_expenses_date_idx').on(table.date)
 }))
 
