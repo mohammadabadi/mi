@@ -12,17 +12,6 @@ The UI is mobile-first and includes PWA support, so the app can be installed on 
 npm install
 ```
 
-Variables:
-
-- `DATABASE_URL`: Supabase PostgreSQL connection string, including SSL.
-- `AUTH_SECRET`: long random secret reserved for auth/session hardening.
-
-Supabase example:
-
-```env
-DATABASE_URL="postgresql://postgres.[PROJECT_REF]:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:6543/postgres?sslmode=require"
-```
-
 ## Database
 
 ```bash
