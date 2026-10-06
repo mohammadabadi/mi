@@ -40,7 +40,7 @@ npm run test
 npm run build
 ```
 
-The production build generates the PWA manifest and service worker under the Vercel output.
+The production build generates the PWA manifest and service worker under the Vercel output1.
 
 ## Deployment
 
