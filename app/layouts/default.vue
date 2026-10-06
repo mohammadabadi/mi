@@ -9,6 +9,7 @@ const nav = [
   { to: '/dashboard', label: 'داشبورد', short: 'خانه', icon: 'i-lucide-house' },
   { to: '/accounts', label: 'حساب‌ها', short: 'حساب', icon: 'i-lucide-wallet-cards' },
   { to: '/transactions', label: 'تراکنش‌ها', short: 'ثبت', icon: 'i-lucide-receipt-text' },
+  { to: '/groups', label: 'گروه‌ها', short: 'گروه', icon: 'i-lucide-users-round' },
   { to: '/categories', label: 'دسته‌بندی‌ها', short: 'دسته', icon: 'i-lucide-tags' },
   { to: '/reports', label: 'گزارش‌ها', short: 'گزارش', icon: 'i-lucide-chart-no-axes-combined' }
 ]
@@ -81,7 +82,7 @@ async function logout() {
       class="mobile-bottom-nav fixed inset-x-0 bottom-0 z-40 border-t border-teal-900/10 bg-white/95 px-2 pt-2 shadow-[0_-8px_28px_rgb(15_118_110_/_0.12)] backdrop-blur md:hidden"
       aria-label="ناوبری اصلی"
     >
-      <div class="mx-auto grid max-w-md grid-cols-5 gap-1">
+      <div class="mx-auto grid max-w-md grid-cols-6 gap-1">
         <NuxtLink
           v-for="item in nav"
           :key="item.to"

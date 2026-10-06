@@ -15,6 +15,20 @@
       "when": 1791191956226,
       "tag": "0001_even_hedge_knight",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791285757698,
+      "tag": "0002_known_gunslinger",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1791286525823,
+      "tag": "0003_adorable_valeria_richards",
+      "breakpoints": true
     }
   ]
 }

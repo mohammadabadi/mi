@@ -37,6 +37,21 @@ const protectedRoutes = [
   'server/api/reports/monthly.get.ts',
   'server/api/reports/expenses.get.ts',
   'server/api/reports/income.get.ts',
+  'server/api/groups/index.get.ts',
+  'server/api/groups/index.post.ts',
+  'server/api/group-invitations/index.get.ts',
+  'server/api/group-invitations/[id]/accept.post.ts',
+  'server/api/group-invitations/[id]/reject.post.ts',
+  'server/api/group-shares/[id]/pay.post.ts',
+  'server/api/notifications/index.get.ts',
+  'server/api/notifications/[id].patch.ts',
+  'server/api/users/search.get.ts',
+]
+
+const groupMemberRoutes = [
+  'server/api/groups/[id].get.ts',
+  'server/api/groups/[id]/invitations/index.post.ts',
+  'server/api/groups/[id]/expenses/index.post.ts',
 ]
 
 const ownershipChecks = [
@@ -123,6 +138,10 @@ describe('server-side tenant isolation', () => {
     expect(compact(read(route))).toContain('requireUser(event)')
   })
 
+  it.each(groupMemberRoutes)('%s requires group membership', (route) => {
+    expect(compact(read(route))).toContain('requireGroupMember(event')
+  })
+
   it.each(ownershipChecks)('$route applies user ownership guards', ({ route, guards }) => {
     const source = compact(read(route))
 
@@ -137,6 +156,24 @@ describe('server-side tenant isolation', () => {
     for (const table of ['sessions', 'accounts', 'categories', 'transactions', 'transfers']) {
       expect(schema).toContain(`export const ${table} =`)
       expect(schema).toContain('userId: uuid(\'user_id\')')
+    }
+  })
+
+  it('stores ownership and membership fields on every group table', () => {
+    const schema = compact(read('server/database/schema.ts'))
+
+    for (const table of ['groups', 'groupMembers', 'groupInvitations', 'groupExpenses', 'groupExpenseShares', 'notifications']) {
+      expect(schema).toContain(`export const ${table} =`)
+    }
+
+    for (const guard of [
+      'ownerId: uuid(\'owner_id\')',
+      'groupId: uuid(\'group_id\')',
+      'inviteeId: uuid(\'invitee_id\')',
+      'payerId: uuid(\'payer_id\')',
+      'userId: uuid(\'user_id\')'
+    ]) {
+      expect(schema).toContain(guard)
     }
   })
 })

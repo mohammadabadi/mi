@@ -32,6 +32,7 @@ const client = postgres(databaseUrl, { max: 1, prepare: false })
 const db = drizzle(client)
 
 const email = 'demo@mifin.local'
+const phone = '09120000000'
 const password = 'password123'
 
 const [existing] = await db.select({ id: users.id }).from(users).where(eq(users.email, email)).limit(1)
@@ -40,6 +41,7 @@ if (!existing) {
   const [user] = await db.insert(users).values({
     name: 'کاربر نمونه',
     email,
+    phone,
     passwordHash: await bcrypt.hash(password, 12)
   }).returning({ id: users.id })
 
@@ -63,7 +65,7 @@ if (!existing) {
     { userId: user.id, accountId: wallet.id, categoryId: bills.id, type: 'expense', amountMinor: BigInt(1200000), description: 'اینترنت', date: '2026-10-05' }
   ])
 
-  console.log(`Seeded demo user: ${email} / ${password}`)
+  console.log(`Seeded demo user: ${email} or ${phone} / ${password}`)
 } else {
   console.log('Demo user already exists. Skipping seed.')
 }

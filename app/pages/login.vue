@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const form = reactive({ email: '', password: '' })
+const form = reactive({ identifier: '', password: '' })
 const error = ref('')
 const loading = ref(false)
 
@@ -13,7 +13,7 @@ async function submit() {
   loading.value = true
   error.value = ''
   try {
-    const session = await $fetch<{ user: { id: string; name: string; email: string } }>('/api/auth/login', { method: 'POST', body: form })
+    const session = await $fetch<{ user: { id: string; name: string; email: string; phone: string | null } }>('/api/auth/login', { method: 'POST', body: form })
     useNuxtData('current-user').data.value = session
     useNuxtData('layout-user').data.value = session
     await navigateTo('/dashboard')
@@ -32,8 +32,8 @@ async function submit() {
       <h1 class="mt-1 text-2xl font-black text-slate-950">ورود به میفین</h1>
 
       <label class="mt-6 block">
-        <span class="text-sm font-medium">ایمیل</span>
-        <input v-model="form.email" type="email" class="field ltr mt-2" autocomplete="email" required>
+        <span class="text-sm font-medium">ایمیل یا شماره موبایل</span>
+        <input v-model="form.identifier" class="field ltr mt-2" autocomplete="username" dir="ltr" placeholder="email@example.com یا 09123456789" required>
       </label>
       <label class="mt-4 block">
         <span class="text-sm font-medium">رمز عبور</span>

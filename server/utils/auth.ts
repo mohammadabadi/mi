@@ -60,6 +60,7 @@ export async function getCurrentUser(event: H3Event) {
     .select({
       userId: sessions.userId,
       email: users.email,
+      phone: users.phone,
       name: users.name,
       expiresAt: sessions.expiresAt
     })
@@ -73,6 +74,7 @@ export async function getCurrentUser(event: H3Event) {
   return {
     id: session.userId,
     email: session.email,
+    phone: session.phone,
     name: session.name
   }
 }

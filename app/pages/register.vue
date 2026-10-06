@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const form = reactive({ name: '', email: '', password: '' })
+const form = reactive({ name: '', email: '', phone: '', password: '' })
 const error = ref('')
 const loading = ref(false)
 
@@ -13,7 +13,7 @@ async function submit() {
   loading.value = true
   error.value = ''
   try {
-    const session = await $fetch<{ user: { id: string; name: string; email: string } }>('/api/auth/register', { method: 'POST', body: form })
+    const session = await $fetch<{ user: { id: string; name: string; email: string; phone: string | null } }>('/api/auth/register', { method: 'POST', body: form })
     useNuxtData('current-user').data.value = session
     useNuxtData('layout-user').data.value = session
     await navigateTo('/dashboard')
@@ -38,6 +38,10 @@ async function submit() {
       <label class="mt-4 block">
         <span class="text-sm font-medium">ایمیل</span>
         <input v-model="form.email" type="email" class="field ltr mt-2" autocomplete="email" required>
+      </label>
+      <label class="mt-4 block">
+        <span class="text-sm font-medium">شماره موبایل</span>
+        <input v-model="form.phone" inputmode="tel" class="field ltr mt-2" autocomplete="tel" dir="ltr" placeholder="09123456789" required>
       </label>
       <label class="mt-4 block">
         <span class="text-sm font-medium">رمز عبور</span>

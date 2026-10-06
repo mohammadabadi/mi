@@ -1,4 +1,4 @@
-const protectedRoutes = ['/dashboard', '/accounts', '/transactions', '/categories', '/reports']
+const protectedRoutes = ['/dashboard', '/accounts', '/transactions', '/groups', '/categories', '/reports']
 const guestRoutes = ['/login', '/register']
 
 export default defineNuxtRouteMiddleware(async (to) => {
