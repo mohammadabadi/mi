@@ -38,36 +38,58 @@ export async function setUserSession(event: H3Event, userId: string) {
 }
 
 export async function clearUserSession(event: H3Event) {
-  const db = useDb()
   const token = getCookie(event, SESSION_COOKIE)
-  if (token) {
-    await db.delete(sessions).where(eq(sessions.tokenHash, hashToken(token)))
-  }
+
   deleteCookie(event, SESSION_COOKIE, sessionCookieOptions)
   setCookie(event, SESSION_COOKIE, '', {
     ...sessionCookieOptions,
     maxAge: 0,
     expires: new Date(0)
   })
+
+  if (token) {
+    try {
+      const db = useDb()
+      await db.delete(sessions).where(eq(sessions.tokenHash, hashToken(token)))
+    } catch (error) {
+      console.warn('Failed to remove server session during logout.', error)
+    }
+  }
 }
 
 export async function getCurrentUser(event: H3Event) {
   const token = getCookie(event, SESSION_COOKIE)
   if (!token) return null
 
-  const db = useDb()
-  const [session] = await db
-    .select({
-      userId: sessions.userId,
-      email: users.email,
-      phone: users.phone,
-      name: users.name,
-      expiresAt: sessions.expiresAt
+  let session: {
+    userId: string
+    email: string
+    phone: string | null
+    name: string
+    expiresAt: Date
+  } | undefined
+
+  try {
+    const db = useDb()
+    ;[session] = await db
+      .select({
+        userId: sessions.userId,
+        email: users.email,
+        phone: users.phone,
+        name: users.name,
+        expiresAt: sessions.expiresAt
+      })
+      .from(sessions)
+      .innerJoin(users, eq(users.id, sessions.userId))
+      .where(and(eq(sessions.tokenHash, hashToken(token)), gt(sessions.expiresAt, new Date())))
+      .limit(1)
+  } catch (error) {
+    console.error('Database connection failed while reading current user.', error)
+    throw createError({
+      statusCode: 503,
+      statusMessage: 'Database is temporarily unreachable. Check the Supabase DATABASE_URL and network access.'
     })
-    .from(sessions)
-    .innerJoin(users, eq(users.id, sessions.userId))
-    .where(and(eq(sessions.tokenHash, hashToken(token)), gt(sessions.expiresAt, new Date())))
-    .limit(1)
+  }
 
   if (!session) return null
 

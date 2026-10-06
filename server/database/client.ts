@@ -22,6 +22,13 @@ export function useDb() {
     })
   }
 
-  client ??= postgres(databaseUrl, { max: 1, prepare: false })
+  client ??= postgres(databaseUrl, {
+    max: 1,
+    prepare: false,
+    ssl: 'require',
+    connect_timeout: 10,
+    idle_timeout: 20,
+    max_lifetime: 60 * 30
+  })
   return drizzle(client, { schema })
 }
