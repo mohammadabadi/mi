@@ -52,6 +52,7 @@ async function logout() {
         </nav>
 
         <div class="flex min-w-0 items-center gap-2 text-sm">
+          <SharedNotificationBell v-if="user" />
           <div v-if="user" class="user-chip">
             <span class="user-avatar">{{ userInitial }}</span>
             <span class="min-w-0">

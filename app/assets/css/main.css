@@ -705,6 +705,17 @@ a {
   transform: translateY(-4px);
 }
 
+.pwa-card-enter-active,
+.pwa-card-leave-active {
+  transition: opacity 190ms ease, transform 190ms ease;
+}
+
+.pwa-card-enter-from,
+.pwa-card-leave-to {
+  opacity: 0;
+  transform: translateY(14px) scale(0.98);
+}
+
 .hide-scrollbar {
   scrollbar-width: none;
 }

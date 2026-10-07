@@ -24,7 +24,19 @@ export default defineEventHandler(async (event) => {
     .where(eq(groupMembers.groupId, groupId))
     .orderBy(desc(groupMembers.joinedAt))
 
-  const expenses = await db
+  const visibleExpenseRows = await db
+    .select({ expenseId: groupExpenseShares.expenseId })
+    .from(groupExpenseShares)
+    .innerJoin(groupExpenses, eq(groupExpenses.id, groupExpenseShares.expenseId))
+    .where(and(
+      eq(groupExpenses.groupId, groupId),
+      eq(groupExpenseShares.userId, user.id)
+    ))
+
+  const visibleExpenseIds = visibleExpenseRows.map((row) => row.expenseId)
+
+  const expenses = visibleExpenseIds.length
+    ? await db
     .select({
       id: groupExpenses.id,
       title: groupExpenses.title,
@@ -47,9 +59,10 @@ export default defineEventHandler(async (event) => {
     .from(groupExpenses)
     .innerJoin(users, eq(users.id, groupExpenses.payerId))
     .leftJoin(groupExpenseShares, eq(groupExpenseShares.expenseId, groupExpenses.id))
-    .where(eq(groupExpenses.groupId, groupId))
+    .where(and(eq(groupExpenses.groupId, groupId), inArray(groupExpenses.id, visibleExpenseIds)))
     .groupBy(groupExpenses.id, users.name)
     .orderBy(desc(groupExpenses.date), desc(groupExpenses.createdAt))
+    : []
 
   const expenseIds = expenses.map((expense) => expense.id)
   const shareRows = expenseIds.length
@@ -92,7 +105,7 @@ export default defineEventHandler(async (event) => {
     .innerJoin(users, eq(users.id, groupMembers.userId))
     .leftJoin(groupExpenseShares, eq(groupExpenseShares.userId, users.id))
     .leftJoin(groupExpenses, and(eq(groupExpenses.id, groupExpenseShares.expenseId), eq(groupExpenses.groupId, groupId)))
-    .where(eq(groupMembers.groupId, groupId))
+    .where(and(eq(groupMembers.groupId, groupId), eq(users.id, user.id)))
     .groupBy(users.id)
 
   return {

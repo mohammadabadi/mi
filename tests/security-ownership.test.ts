@@ -176,4 +176,21 @@ describe('server-side tenant isolation', () => {
       expect(schema).toContain(guard)
     }
   })
+
+  it('only returns group expenses where the current user has a share', () => {
+    const source = compact(read('server/api/groups/[id].get.ts'))
+
+    expect(source).toContain('visibleExpenseRows')
+    expect(source).toContain('eq(groupExpenseShares.userId, user.id)')
+    expect(source).toContain('inArray(groupExpenses.id, visibleExpenseIds)')
+    expect(source).toContain('eq(users.id, user.id)')
+  })
+
+  it('allows only the share owner or expense payer to mark a group share as paid', () => {
+    const source = compact(read('server/api/group-shares/[id]/pay.post.ts'))
+
+    expect(source).toContain('const isShareOwner = shareInfo.shareUserId === user.id')
+    expect(source).toContain('const isExpensePayer = shareInfo.payerId === user.id')
+    expect(source).toContain('if (!isShareOwner && !isExpensePayer)')
+  })
 })

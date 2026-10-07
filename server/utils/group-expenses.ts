@@ -14,6 +14,10 @@ export function buildExpenseShares(input: ExpenseShareInput) {
     throw createError({ statusCode: 400, statusMessage: 'پرداخت‌کننده و افراد دنگ باید عضو گروه باشند.' })
   }
 
+  if (!participantIds.includes(input.payerId)) {
+    throw createError({ statusCode: 400, statusMessage: 'پرداخت‌کننده باید در افراد سهیم این خرج باشد.' })
+  }
+
   const amount = BigInt(input.amountMinor)
 
   if (input.splitMode === 'equal') {
