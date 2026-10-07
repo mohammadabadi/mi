@@ -11,7 +11,10 @@ const filters = reactive({
   page: 1
 })
 const activeForm = ref<'transaction' | 'transfer'>('transaction')
+const activePanel = ref<'list' | 'new'>('list')
 const filtersOpen = ref(false)
+const formSection = ref<HTMLElement | null>(null)
+const transactionDescriptionInput = ref<HTMLInputElement | null>(null)
 const query = computed(() => ({
   page: filters.page,
   limit: 20,
@@ -114,6 +117,22 @@ const activeFilterCount = computed(() => [
 ].filter(Boolean).length)
 const hasActiveFilters = computed(() => activeFilterCount.value > 0)
 const filterToggleLabel = computed(() => hasActiveFilters.value ? `${activeFilterCount.value} فیلتر فعال` : 'فیلترها')
+const pageIncomeMinor = computed(() => transactions.value.filter((item) => item.type === 'income').reduce((sum, item) => sum + BigInt(item.amountMinor || '0'), BigInt(0)).toString())
+const pageExpenseMinor = computed(() => transactions.value.filter((item) => item.type === 'expense').reduce((sum, item) => sum + BigInt(item.amountMinor || '0'), BigInt(0)).toString())
+
+function panelClass(panel: 'list' | 'new') {
+  return activePanel.value === panel ? 'block' : 'hidden lg:block'
+}
+
+function openNewTransactionPanel(form: 'transaction' | 'transfer' = 'transaction') {
+  activeForm.value = form
+  activePanel.value = 'new'
+  error.value = ''
+  nextTick(() => {
+    formSection.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    transactionDescriptionInput.value?.focus({ preventScroll: true })
+  })
+}
 
 watch([accountsData, categoriesData], () => {
   transactionForm.accountId ||= accounts.value[0]?.id ?? ''
@@ -167,6 +186,7 @@ async function createTransaction() {
     transactionForm.amountMinor = ''
     transactionForm.description = ''
     success.value = 'تراکنش ثبت شد.'
+    activePanel.value = 'list'
     await refresh()
   } catch (err) {
     error.value = err instanceof Error ? err.message : 'ثبت تراکنش ناموفق بود.'
@@ -186,6 +206,7 @@ async function createTransfer() {
     transferForm.amountMinor = ''
     transferForm.description = ''
     success.value = 'انتقال ثبت شد.'
+    activePanel.value = 'list'
     await refresh()
   } catch (err) {
     error.value = err instanceof Error ? err.message : 'ثبت انتقال ناموفق بود.'
@@ -201,100 +222,62 @@ async function removeTransaction(id: string) {
 </script>
 
 <template>
-  <div class="space-y-5">
-    <div>
-      <p class="text-sm font-semibold text-slate-500">ثبت سریع و مرور روزانه</p>
-      <h1 class="text-2xl font-black text-slate-950">تراکنش‌ها</h1>
-    </div>
+  <div class="space-y-4">
+    <section class="overflow-hidden rounded-[20px] bg-[linear-gradient(135deg,#063c36,#0f766e_58%,#d99b2b_135%)] text-white shadow-xl shadow-teal-900/15">
+      <div class="p-4 sm:p-5">
+        <div class="flex items-start justify-between gap-3">
+          <div class="min-w-0">
+            <p class="text-xs font-black text-white/70">ثبت سریع و مرور روزانه</p>
+            <h1 class="mt-1 text-2xl font-black">تراکنش‌ها</h1>
+            <p class="mt-2 max-w-xl text-sm leading-6 text-white/78">هزینه، درآمد و انتقال را با عددهای خوانا ثبت کن و با فیلترهای سریع به گزارش دلخواه برس.</p>
+          </div>
+          <button type="button" class="inline-flex size-11 shrink-0 items-center justify-center rounded-2xl bg-white/12 ring-1 ring-white/20 active:scale-95" aria-label="ثبت تراکنش" @click="openNewTransactionPanel()">
+            <UIcon name="i-lucide-plus" class="size-5" />
+          </button>
+        </div>
 
-    <section class="mobile-card p-4">
-      <div class="grid grid-cols-2 gap-2 rounded-xl bg-slate-100 p-1">
-        <button
-          class="min-h-11 rounded-lg text-sm font-bold"
-          :class="activeForm === 'transaction' ? 'bg-white text-slate-950 shadow-sm' : 'text-slate-500'"
-          @click="activeForm = 'transaction'"
-        >
-          <UIcon name="i-lucide-receipt-text" class="inline-block size-4 align-middle" />
-          <span class="align-middle">درآمد / هزینه</span>
-        </button>
-        <button
-          class="min-h-11 rounded-lg text-sm font-bold"
-          :class="activeForm === 'transfer' ? 'bg-white text-slate-950 shadow-sm' : 'text-slate-500'"
-          @click="activeForm = 'transfer'"
-        >
-          <UIcon name="i-lucide-arrow-left-right" class="inline-block size-4 align-middle" />
-          <span class="align-middle">انتقال</span>
-        </button>
+        <div class="mt-4 grid grid-cols-3 gap-2">
+          <div class="rounded-2xl bg-white/12 p-3 ring-1 ring-white/15">
+            <span class="block text-[11px] font-bold text-white/68">تراکنش</span>
+            <strong class="mt-1 block text-lg font-black">{{ transactions.length }}</strong>
+          </div>
+          <div class="rounded-2xl bg-white/12 p-3 ring-1 ring-white/15">
+            <span class="block text-[11px] font-bold text-white/68">درآمد</span>
+            <strong class="money-value mt-1 block truncate text-sm font-black text-emerald-100">{{ money(pageIncomeMinor) }}</strong>
+          </div>
+          <div class="rounded-2xl bg-white/12 p-3 ring-1 ring-white/15">
+            <span class="block text-[11px] font-bold text-white/68">هزینه</span>
+            <strong class="money-value mt-1 block truncate text-sm font-black text-rose-100">{{ money(pageExpenseMinor) }}</strong>
+          </div>
+        </div>
       </div>
-
-      <form v-if="activeForm === 'transaction'" class="mt-4 space-y-4" @submit.prevent="createTransaction">
-        <div class="grid grid-cols-2 gap-2">
-          <label class="block">
-            <span class="text-sm font-medium">نوع</span>
-            <SharedSelect v-model="transactionForm.type" :options="typeOptions" class="mt-2" />
-          </label>
-          <SharedMoneyInput v-model="transactionForm.amountMinor" label="مبلغ" required />
-        </div>
-        <label class="block">
-          <span class="text-sm font-medium">حساب</span>
-          <SharedSelect v-model="transactionForm.accountId" :options="accountOptions" class="mt-2" required />
-        </label>
-        <label class="block">
-          <span class="text-sm font-medium">دسته‌بندی</span>
-          <SharedSelect v-model="transactionForm.categoryId" :options="categoryOptions" class="mt-2" required />
-        </label>
-        <div class="grid gap-3 sm:grid-cols-2">
-          <SharedJalaliDatePicker v-model="transactionForm.date" label="تاریخ" required />
-          <label class="block">
-            <span class="text-sm font-medium">شرح</span>
-            <input v-model="transactionForm.description" class="field mt-2" placeholder="مثلاً سوپرمارکت">
-          </label>
-        </div>
-        <button class="btn-primary w-full disabled:cursor-not-allowed disabled:opacity-75" :disabled="transactionSubmitting">
-          <UIcon :name="transactionSubmitting ? 'i-lucide-loader-circle' : 'i-lucide-plus'" class="btn-icon" :class="{ 'animate-spin': transactionSubmitting }" />
-          <span>ثبت تراکنش</span>
-        </button>
-      </form>
-
-      <form v-else class="mt-4 space-y-4" @submit.prevent="createTransfer">
-        <div class="grid gap-3 sm:grid-cols-2">
-          <label class="block">
-            <span class="text-sm font-medium">از حساب</span>
-            <SharedSelect v-model="transferForm.fromAccountId" :options="accountOptions" class="mt-2" required />
-          </label>
-          <label class="block">
-            <span class="text-sm font-medium">به حساب</span>
-            <SharedSelect v-model="transferForm.toAccountId" :options="accountOptions" class="mt-2" required />
-          </label>
-        </div>
-        <div class="grid gap-3 sm:grid-cols-2">
-          <SharedMoneyInput v-model="transferForm.amountMinor" label="مبلغ انتقال" required />
-          <SharedJalaliDatePicker v-model="transferForm.date" label="تاریخ انتقال" required />
-        </div>
-        <label class="block">
-          <span class="text-sm font-medium">شرح</span>
-          <input v-model="transferForm.description" class="field mt-2" placeholder="مثلاً انتقال به کیف پول">
-        </label>
-        <button class="btn-primary w-full bg-cyan-700 disabled:cursor-not-allowed disabled:opacity-75" :disabled="transferSubmitting">
-          <UIcon :name="transferSubmitting ? 'i-lucide-loader-circle' : 'i-lucide-arrow-left-right'" class="btn-icon" :class="{ 'animate-spin': transferSubmitting }" />
-          <span>ثبت انتقال</span>
-        </button>
-      </form>
-
-      <p v-if="error" class="mt-4 rounded-lg bg-rose-50 p-3 text-sm text-rose-700">{{ error }}</p>
-      <p v-if="success" class="mt-4 rounded-lg bg-emerald-50 p-3 text-sm text-emerald-700">{{ success }}</p>
     </section>
 
-    <section class="space-y-3">
-      <div class="flex items-center justify-between gap-3">
-        <div>
-          <p class="text-xs font-extrabold text-teal-700">گزارش تراکنش‌ها</p>
-          <h2 class="text-xl font-black text-slate-950">آخرین تراکنش‌ها</h2>
-        </div>
-        <span v-if="hasActiveFilters" class="rounded-full bg-teal-50 px-3 py-1 text-xs font-black text-teal-800">
-          {{ activeFilterCount }} فیلتر
-        </span>
+    <nav class="filter-summary lg:hidden">
+      <div class="grid grid-cols-2 gap-2 rounded-2xl border border-teal-100 bg-white/94 p-2 shadow-lg shadow-teal-900/5 backdrop-blur">
+        <button type="button" class="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl text-sm font-black transition" :class="activePanel === 'list' ? 'bg-teal-700 text-white shadow-lg shadow-teal-900/15' : 'text-slate-600'" @click="activePanel = 'list'">
+          <UIcon name="i-lucide-list" class="size-4" />
+          <span>لیست</span>
+        </button>
+        <button type="button" class="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl text-sm font-black transition" :class="activePanel === 'new' ? 'bg-teal-700 text-white shadow-lg shadow-teal-900/15' : 'text-slate-600'" @click="openNewTransactionPanel()">
+          <UIcon name="i-lucide-plus" class="size-4" />
+          <span>ثبت</span>
+        </button>
       </div>
+    </nav>
+
+    <div class="grid gap-4 lg:grid-cols-[minmax(0,1.45fr)_minmax(360px,0.8fr)] lg:items-start">
+      <section class="space-y-3" :class="panelClass('list')">
+        <div class="flex items-center justify-between gap-3">
+          <div>
+            <p class="text-xs font-extrabold text-teal-700">گزارش تراکنش‌ها</p>
+            <h2 class="text-xl font-black text-slate-950">آخرین تراکنش‌ها</h2>
+          </div>
+          <button type="button" class="btn-primary hidden min-h-10 px-3 py-2 text-sm lg:inline-flex" @click="openNewTransactionPanel()">
+            <UIcon name="i-lucide-plus" class="btn-icon" />
+            <span>ثبت تراکنش</span>
+          </button>
+        </div>
 
       <div class="mobile-card filter-summary p-2 md:hidden">
         <button
@@ -379,7 +362,7 @@ async function removeTransaction(id: string) {
         <p v-if="!transactions.length" class="mobile-card p-8 text-center text-sm text-slate-500">تراکنشی ثبت نشده است.</p>
       </div>
 
-      <div v-if="!pagePending" class="hidden overflow-hidden rounded-lg border border-slate-200 bg-white md:block">
+      <div v-if="!pagePending" class="hidden overflow-hidden rounded-2xl border border-slate-200 bg-white md:block">
         <table class="w-full text-sm">
           <thead class="bg-slate-50 text-slate-500">
             <tr>
@@ -413,6 +396,84 @@ async function removeTransaction(id: string) {
         </table>
         <p v-if="!transactions.length" class="p-8 text-center text-slate-500">تراکنشی ثبت نشده است.</p>
       </div>
-    </section>
+      </section>
+
+      <aside class="lg:sticky lg:top-5">
+        <section ref="formSection" class="mobile-card p-4 scroll-mt-24" :class="panelClass('new')">
+          <h2 class="text-lg font-black text-slate-950">ثبت تراکنش</h2>
+          <div class="mt-4 grid grid-cols-2 gap-2 rounded-xl bg-slate-100 p-1">
+            <button
+              type="button"
+              class="min-h-11 rounded-lg text-sm font-bold"
+              :class="activeForm === 'transaction' ? 'bg-white text-slate-950 shadow-sm' : 'text-slate-500'"
+              @click="activeForm = 'transaction'"
+            >
+              <UIcon name="i-lucide-receipt-text" class="inline-block size-4 align-middle" />
+              <span class="align-middle">درآمد / هزینه</span>
+            </button>
+            <button
+              type="button"
+              class="min-h-11 rounded-lg text-sm font-bold"
+              :class="activeForm === 'transfer' ? 'bg-white text-slate-950 shadow-sm' : 'text-slate-500'"
+              @click="activeForm = 'transfer'"
+            >
+              <UIcon name="i-lucide-arrow-left-right" class="inline-block size-4 align-middle" />
+              <span class="align-middle">انتقال</span>
+            </button>
+          </div>
+
+          <form v-if="activeForm === 'transaction'" class="mt-4 space-y-4" @submit.prevent="createTransaction">
+            <div class="grid grid-cols-2 gap-2">
+              <label class="block">
+                <span class="text-sm font-medium">نوع</span>
+                <SharedSelect v-model="transactionForm.type" :options="typeOptions" class="mt-2" />
+              </label>
+              <SharedMoneyInput v-model="transactionForm.amountMinor" label="مبلغ" required />
+            </div>
+            <label class="block">
+              <span class="text-sm font-medium">حساب</span>
+              <SharedSelect v-model="transactionForm.accountId" :options="accountOptions" class="mt-2" required />
+            </label>
+            <label class="block">
+              <span class="text-sm font-medium">دسته‌بندی</span>
+              <SharedSelect v-model="transactionForm.categoryId" :options="categoryOptions" class="mt-2" required />
+            </label>
+            <SharedJalaliDatePicker v-model="transactionForm.date" label="تاریخ" required />
+            <label class="block">
+              <span class="text-sm font-medium">شرح</span>
+              <input ref="transactionDescriptionInput" v-model="transactionForm.description" class="field mt-2" placeholder="مثلا سوپرمارکت">
+            </label>
+            <button class="btn-primary w-full disabled:cursor-not-allowed disabled:opacity-75" :disabled="transactionSubmitting">
+              <UIcon :name="transactionSubmitting ? 'i-lucide-loader-circle' : 'i-lucide-plus'" class="btn-icon" :class="{ 'animate-spin': transactionSubmitting }" />
+              <span>{{ transactionSubmitting ? 'در حال ثبت...' : 'ثبت تراکنش' }}</span>
+            </button>
+          </form>
+
+          <form v-else class="mt-4 space-y-4" @submit.prevent="createTransfer">
+            <label class="block">
+              <span class="text-sm font-medium">از حساب</span>
+              <SharedSelect v-model="transferForm.fromAccountId" :options="accountOptions" class="mt-2" required />
+            </label>
+            <label class="block">
+              <span class="text-sm font-medium">به حساب</span>
+              <SharedSelect v-model="transferForm.toAccountId" :options="accountOptions" class="mt-2" required />
+            </label>
+            <SharedMoneyInput v-model="transferForm.amountMinor" label="مبلغ انتقال" required />
+            <SharedJalaliDatePicker v-model="transferForm.date" label="تاریخ انتقال" required />
+            <label class="block">
+              <span class="text-sm font-medium">شرح</span>
+              <input v-model="transferForm.description" class="field mt-2" placeholder="مثلا انتقال به کیف پول">
+            </label>
+            <button class="btn-primary w-full bg-cyan-700 disabled:cursor-not-allowed disabled:opacity-75" :disabled="transferSubmitting">
+              <UIcon :name="transferSubmitting ? 'i-lucide-loader-circle' : 'i-lucide-arrow-left-right'" class="btn-icon" :class="{ 'animate-spin': transferSubmitting }" />
+              <span>{{ transferSubmitting ? 'در حال ثبت...' : 'ثبت انتقال' }}</span>
+            </button>
+          </form>
+
+          <p v-if="error" class="mt-4 rounded-xl bg-rose-50 p-3 text-sm font-bold text-rose-700">{{ error }}</p>
+          <p v-if="success" class="mt-4 rounded-xl bg-emerald-50 p-3 text-sm font-bold text-emerald-700">{{ success }}</p>
+        </section>
+      </aside>
+    </div>
   </div>
 </template>

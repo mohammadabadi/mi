@@ -6,6 +6,7 @@ const groupId = computed(() => String(route.params.id))
 const { money, date, number } = usePersian()
 const { data: meData } = await useFetch('/api/auth/me', { key: 'current-user', credentials: 'include' })
 const { data, pending, refresh } = useFetch(() => `/api/groups/${groupId.value}`, { credentials: 'include', lazy: true })
+const { data: accountsData } = useFetch('/api/accounts', { credentials: 'include', lazy: true })
 
 interface MemberItem {
   userId: string
@@ -50,11 +51,18 @@ interface SearchUser {
   phone: string | null
 }
 
+interface AccountItem {
+  id: string
+  name: string
+}
+
 const currentUserId = computed(() => meData.value?.user?.id ?? '')
 const group = computed(() => data.value?.group)
 const members = computed(() => (data.value?.members ?? []) as unknown as MemberItem[])
 const expenses = computed(() => (data.value?.expenses ?? []) as unknown as ExpenseItem[])
 const memberOptions = computed(() => members.value.map((member) => ({ value: member.userId, label: member.name })))
+const accounts = computed(() => (accountsData.value?.accounts ?? []) as unknown as AccountItem[])
+const accountOptions = computed(() => accounts.value.map((account) => ({ value: account.id, label: account.name })))
 const currentMember = computed(() => members.value.find((member) => member.userId === currentUserId.value))
 
 const activePanel = ref<GroupPanel>('expenses')
@@ -80,6 +88,7 @@ const expenseForm = reactive({
 const expenseLoading = ref(false)
 const expenseError = ref('')
 const payNotes = reactive<Record<string, string>>({})
+const payAccountIds = reactive<Record<string, string>>({})
 const payingShareId = ref('')
 const confirmingShareId = ref('')
 const editingExpenseId = ref('')
@@ -93,6 +102,8 @@ const editForms = reactive<Record<string, {
 const cardForms = reactive<Record<string, { cardNumber: string; note: string }>>({})
 const cardLoadingId = ref('')
 const cardMessages = reactive<Record<string, string>>({})
+const newExpenseSection = ref<HTMLElement | null>(null)
+const expenseTitleInput = ref<HTMLInputElement | null>(null)
 
 const settledExpenses = computed(() => expenses.value.filter((expense) => expenseSettled(expense)).length)
 const totalPendingMinor = computed(() => expenses.value.reduce((total, expense) => total + BigInt(expensePendingMinor(expense)), BigInt(0)).toString())
@@ -111,12 +122,49 @@ watch(members, () => {
   }
 }, { immediate: true })
 
+watch(accounts, () => {
+  const firstAccountId = accounts.value[0]?.id || ''
+  if (!firstAccountId) return
+  for (const expense of expenses.value) {
+    if (expense.myShareId && !payAccountIds[expense.myShareId]) {
+      payAccountIds[expense.myShareId] = firstAccountId
+    }
+  }
+}, { immediate: true })
+
+watch(expenses, () => {
+  const firstAccountId = accounts.value[0]?.id || ''
+  if (!firstAccountId) return
+  for (const expense of expenses.value) {
+    if (expense.myShareId && !payAccountIds[expense.myShareId]) {
+      payAccountIds[expense.myShareId] = firstAccountId
+    }
+  }
+}, { immediate: true })
+
 function panelClass(panel: GroupPanel) {
   return activePanel.value === panel ? 'block' : 'hidden lg:block'
 }
 
 function memberInitial(name: string) {
   return name.trim().slice(0, 1) || 'م'
+}
+
+function openNewExpensePanel() {
+  activePanel.value = 'new'
+  expenseError.value = ''
+  nextTick(() => {
+    newExpenseSection.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    expenseTitleInput.value?.focus({ preventScroll: true })
+  })
+}
+
+function selectedPayAccountId(expense: ExpenseItem) {
+  return expense.myShareId ? payAccountIds[expense.myShareId] || '' : ''
+}
+
+function setPayAccountId(expense: ExpenseItem, accountId: string) {
+  if (expense.myShareId) payAccountIds[expense.myShareId] = accountId
 }
 
 function toggleExpense(id: string) {
@@ -224,8 +272,11 @@ function getEditForm(expenseId: string) {
   })
 }
 
-function getCardForm(expenseId: string) {
-  return cardForms[expenseId] ?? (cardForms[expenseId] = { cardNumber: '', note: '' })
+function getCardForm(expense: ExpenseItem) {
+  return cardForms[expense.id] ?? (cardForms[expense.id] = {
+    cardNumber: expense.payerCardNumber ?? '',
+    note: expense.payerCardNote ?? ''
+  })
 }
 
 function resetExpenseForm() {
@@ -305,13 +356,13 @@ async function sendCard(expense: ExpenseItem) {
   cardLoadingId.value = expense.id
   cardMessages[expense.id] = ''
   try {
-    const response = await $fetch<{ notifiedCount: number }>(`/api/groups/${groupId.value}/expenses/${expense.id}/card`, {
+    const response = await $fetch<{ notifiedCount: number; cardNumber: string; note: string }>(`/api/groups/${groupId.value}/expenses/${expense.id}/card`, {
       method: 'POST',
       body: form
     })
     cardMessages[expense.id] = response.notifiedCount ? 'شماره کارت برای افراد بدهکار ارسال شد.' : 'فرد بدهکاری برای ارسال شماره کارت وجود ندارد.'
-    form.cardNumber = ''
-    form.note = ''
+    form.cardNumber = response.cardNumber
+    form.note = response.note
     await refresh()
   } finally {
     cardLoadingId.value = ''
@@ -320,11 +371,13 @@ async function sendCard(expense: ExpenseItem) {
 
 async function payShare(expense: ExpenseItem) {
   if (!expense.myShareId || payingShareId.value) return
+  const accountId = payAccountIds[expense.myShareId]
+  if (!accountId) return
   payingShareId.value = expense.myShareId
   try {
     await $fetch(`/api/group-shares/${expense.myShareId}/pay`, {
       method: 'POST',
-      body: { note: payNotes[expense.myShareId] || '' }
+      body: { note: payNotes[expense.myShareId] || '', accountId }
     })
     payNotes[expense.myShareId] = ''
     await refresh()
@@ -366,7 +419,7 @@ async function confirmSharePayment(share: ExpenseShare) {
               <h1 class="mt-1 truncate text-2xl font-black">{{ group.name }}</h1>
               <p v-if="group.description" class="mt-2 line-clamp-2 text-sm leading-6 text-white/78">{{ group.description }}</p>
             </div>
-            <button type="button" class="inline-flex size-11 shrink-0 items-center justify-center rounded-2xl bg-white/12 ring-1 ring-white/20 active:scale-95" aria-label="ثبت خرج جدید" @click="activePanel = 'new'">
+            <button type="button" class="inline-flex size-11 shrink-0 items-center justify-center rounded-2xl bg-white/12 ring-1 ring-white/20 active:scale-95" aria-label="ثبت خرج جدید" @click="openNewExpensePanel">
               <UIcon name="i-lucide-plus" class="size-5" />
             </button>
           </div>
@@ -416,7 +469,7 @@ async function confirmSharePayment(share: ExpenseShare) {
         <section class="space-y-3" :class="panelClass('expenses')">
           <div class="flex items-center justify-between gap-3">
             <h2 class="text-lg font-black text-slate-950">خرج‌های گروه</h2>
-            <button type="button" class="btn-primary min-h-10 px-3 py-2 text-sm lg:hidden" @click="activePanel = 'new'">
+            <button type="button" class="btn-primary min-h-10 px-3 py-2 text-sm lg:hidden" @click="openNewExpensePanel">
               <UIcon name="i-lucide-plus" class="btn-icon" />
               <span>ثبت خرج</span>
             </button>
@@ -509,8 +562,8 @@ async function confirmSharePayment(share: ExpenseShare) {
               <div v-if="expense.payerId === currentUserId" class="rounded-2xl bg-teal-50 p-3">
                 <p class="text-sm font-black text-teal-900">ارسال شماره کارت به بدهکارها</p>
                 <div class="mt-3 grid gap-2 sm:grid-cols-2">
-                  <input v-model="getCardForm(expense.id).cardNumber" class="field ltr" inputmode="numeric" placeholder="6037 0000 0000 0000">
-                  <input v-model="getCardForm(expense.id).note" class="field" placeholder="یادداشت اختیاری">
+                  <input v-model="getCardForm(expense).cardNumber" class="field ltr" inputmode="numeric" placeholder="6037 0000 0000 0000">
+                  <input v-model="getCardForm(expense).note" class="field" placeholder="یادداشت اختیاری">
                 </div>
                 <button class="btn-secondary mt-3 w-full disabled:opacity-70" :disabled="cardLoadingId === expense.id" @click="sendCard(expense)">
                   <UIcon :name="cardLoadingId === expense.id ? 'i-lucide-loader-circle' : 'i-lucide-credit-card'" class="btn-icon" :class="{ 'animate-spin': cardLoadingId === expense.id }" />
@@ -525,11 +578,31 @@ async function confirmSharePayment(share: ExpenseShare) {
                   <span class="money-value font-black" :class="expense.myShareStatus === 'paid' ? 'text-emerald-700' : 'text-rose-700'">{{ money(expense.myShareMinor) }}</span>
                 </div>
                 <template v-if="expense.myShareStatus === 'pending'">
-                  <input v-model="payNotes[expense.myShareId]" class="field mt-3" placeholder="جزئیات پرداخت، مثلا کارت به کارت شد">
-                  <button class="btn-primary mt-3 w-full disabled:opacity-70" :disabled="payingShareId === expense.myShareId" @click="payShare(expense)">
-                    <UIcon :name="payingShareId === expense.myShareId ? 'i-lucide-loader-circle' : 'i-lucide-check'" class="btn-icon" :class="{ 'animate-spin': payingShareId === expense.myShareId }" />
-                    <span>پرداخت کردم</span>
-                  </button>
+                  <template v-if="accounts.length">
+                    <label class="mt-3 block">
+                      <span class="text-sm font-medium">حساب پرداخت</span>
+                      <SharedSelect
+                        :model-value="selectedPayAccountId(expense)"
+                        :options="accountOptions"
+                        class="mt-2"
+                        @update:model-value="setPayAccountId(expense, $event)"
+                      />
+                    </label>
+                    <input v-model="payNotes[expense.myShareId || '']" class="field mt-3" placeholder="جزئیات پرداخت، مثلا کارت به کارت شد">
+                    <p class="mt-2 rounded-xl bg-teal-50 p-3 text-xs font-bold leading-5 text-teal-800">با تایید پرداخت، یک تراکنش هزینه برای همین دنگ در حساب انتخاب‌شده ثبت می‌شود.</p>
+                    <button class="btn-primary mt-3 w-full disabled:opacity-70" :disabled="payingShareId === expense.myShareId || !payAccountIds[expense.myShareId || '']" @click="payShare(expense)">
+                      <UIcon :name="payingShareId === expense.myShareId ? 'i-lucide-loader-circle' : 'i-lucide-check'" class="btn-icon" :class="{ 'animate-spin': payingShareId === expense.myShareId }" />
+                      <span>{{ payingShareId === expense.myShareId ? 'در حال ثبت...' : 'پرداخت کردم' }}</span>
+                    </button>
+                  </template>
+                  <div v-else class="mt-3 rounded-2xl border border-amber-100 bg-amber-50 p-3">
+                    <p class="text-sm font-black text-amber-900">برای ثبت پرداخت، اول یک حساب بساز.</p>
+                    <p class="mt-1 text-xs font-bold leading-5 text-amber-800">پرداخت دنگ باید در گزارش‌های مالی شما هم ثبت شود.</p>
+                    <NuxtLink to="/accounts" class="btn-primary mt-3 w-full min-h-10 text-sm">
+                      <UIcon name="i-lucide-wallet-cards" class="btn-icon" />
+                      <span>ساخت حساب</span>
+                    </NuxtLink>
+                  </div>
                 </template>
                 <p v-else class="mt-3 rounded-xl bg-emerald-50 p-3 text-sm font-bold text-emerald-700">پرداخت شده</p>
               </div>
@@ -555,12 +628,12 @@ async function confirmSharePayment(share: ExpenseShare) {
                     <span class="align-middle">سفارشی</span>
                   </button>
                 </div>
-                <div class="mt-3 grid gap-2 sm:grid-cols-2">
+                <div class="mt-3 grid grid-cols-2 gap-2">
                   <button
                     v-for="member in members"
                     :key="member.userId"
                     type="button"
-                    class="rounded-xl border p-3 text-right text-sm font-black"
+                    class="min-h-11 rounded-xl border px-2.5 py-2 text-right text-xs font-black sm:p-3 sm:text-sm"
                     :class="getEditForm(expense.id).participantIds.includes(member.userId) ? 'border-teal-700 bg-teal-50 text-teal-900' : 'border-slate-200 bg-white text-slate-600'"
                     @click="toggleEditParticipant(expense.id, member.userId)"
                   >
@@ -585,7 +658,7 @@ async function confirmSharePayment(share: ExpenseShare) {
           <div v-if="!expenses.length" class="mobile-card p-6 text-center">
             <UIcon name="i-lucide-receipt-text" class="mx-auto size-9 text-teal-700" />
             <p class="mt-2 text-sm font-black text-slate-950">هنوز خرجی ثبت نشده است.</p>
-            <button type="button" class="btn-primary mt-4 w-full sm:w-auto" @click="activePanel = 'new'">
+            <button type="button" class="btn-primary mt-4 w-full sm:w-auto" @click="openNewExpensePanel">
               <UIcon name="i-lucide-plus" class="btn-icon" />
               <span>ثبت اولین خرج</span>
             </button>
@@ -593,13 +666,13 @@ async function confirmSharePayment(share: ExpenseShare) {
         </section>
 
         <aside class="space-y-4 lg:sticky lg:top-5">
-          <section class="mobile-card p-4" :class="panelClass('new')">
+          <section ref="newExpenseSection" class="mobile-card p-4 scroll-mt-24" :class="panelClass('new')">
             <h2 class="text-lg font-black text-slate-950">ثبت خرج گروهی</h2>
             <form class="mt-4 space-y-4" @submit.prevent="createExpense">
               <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
                 <label class="block">
                   <span class="text-sm font-medium">عنوان خرج</span>
-                  <input v-model="expenseForm.title" class="field mt-2" placeholder="مثلا قهوه" required>
+                  <input ref="expenseTitleInput" v-model="expenseForm.title" class="field mt-2" placeholder="مثلا قهوه" required>
                 </label>
                 <SharedMoneyInput v-model="expenseForm.amountMinor" label="مبلغ کل" required />
               </div>
@@ -621,12 +694,12 @@ async function confirmSharePayment(share: ExpenseShare) {
                     <span>همه</span>
                   </button>
                 </div>
-                <div class="mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
+                <div class="mt-2 grid grid-cols-2 gap-2">
                   <button
                     v-for="member in members"
                     :key="member.userId"
                     type="button"
-                    class="rounded-xl border p-3 text-right text-sm font-black"
+                    class="min-h-11 rounded-xl border px-2.5 py-2 text-right text-xs font-black sm:p-3 sm:text-sm"
                     :class="expenseForm.participantIds.includes(member.userId) ? 'border-teal-700 bg-teal-50 text-teal-900' : 'border-slate-200 bg-white text-slate-600'"
                     @click="toggleParticipant(member.userId)"
                   >

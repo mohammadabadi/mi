@@ -57,5 +57,5 @@ export default defineEventHandler(async (event) => {
     data: { groupId, expenseId, cardNumber: formattedCard }
   })))
 
-  return { ok: true, notifiedCount: recipients.length }
+  return { ok: true, notifiedCount: recipients.length, cardNumber: formattedCard, note: body.note }
 })

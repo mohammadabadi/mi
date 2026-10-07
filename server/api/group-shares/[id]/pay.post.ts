@@ -1,6 +1,6 @@
 import { and, eq } from 'drizzle-orm'
 import { groupSharePaySchema } from '../../../../shared/schemas/finance'
-import { groupExpenseShares, groupExpenses, groups, users } from '../../../database/schema'
+import { accounts, categories, groupExpenseShares, groupExpenses, groups, transactions, users } from '../../../database/schema'
 
 export default defineEventHandler(async (event) => {
   const user = await requireUser(event)
@@ -36,6 +36,36 @@ export default defineEventHandler(async (event) => {
   }
   if (shareInfo.status === 'paid') throw createError({ statusCode: 409, statusMessage: 'این دنگ قبلاً پرداخت شده است.' })
 
+  let transactionCategoryId = ''
+  if (isShareOwner && shareInfo.payerId !== user.id) {
+    if (!body.accountId) {
+      throw createError({ statusCode: 400, statusMessage: 'برای ثبت پرداخت دنگ، یک حساب پرداخت انتخاب کنید.' })
+    }
+
+    const [account] = await db
+      .select({ id: accounts.id })
+      .from(accounts)
+      .where(and(eq(accounts.id, body.accountId), eq(accounts.userId, user.id)))
+      .limit(1)
+    if (!account) throw createError({ statusCode: 404, statusMessage: 'حساب پرداخت پیدا نشد.' })
+
+    const [category] = await db
+      .select({ id: categories.id })
+      .from(categories)
+      .where(and(eq(categories.userId, user.id), eq(categories.type, 'expense'), eq(categories.isArchived, false)))
+      .limit(1)
+    if (!category) {
+      throw createError({ statusCode: 409, statusMessage: 'برای ثبت تراکنش پرداخت دنگ، ابتدا یک دسته‌بندی هزینه بسازید.' })
+    }
+
+    const balance = await getAccountBalance(user.id, body.accountId)
+    if (balance < shareInfo.amountMinor) {
+      throw createError({ statusCode: 409, statusMessage: 'موجودی حساب انتخاب‌شده برای ثبت پرداخت کافی نیست.' })
+    }
+
+    transactionCategoryId = category.id
+  }
+
   const [share] = await db
     .update(groupExpenseShares)
     .set({
@@ -48,6 +78,18 @@ export default defineEventHandler(async (event) => {
     .returning()
 
   if (!share) throw createError({ statusCode: 500, statusMessage: 'ثبت پرداخت دنگ ناموفق بود.' })
+
+  if (isShareOwner && shareInfo.payerId !== user.id && body.accountId && transactionCategoryId) {
+    await db.insert(transactions).values({
+      userId: user.id,
+      accountId: body.accountId,
+      categoryId: transactionCategoryId,
+      type: 'expense',
+      amountMinor: shareInfo.amountMinor,
+      description: `پرداخت دنگ ${shareInfo.title} به ${shareInfo.payerName}`,
+      date: new Date().toISOString().slice(0, 10)
+    })
+  }
 
   if (isShareOwner && shareInfo.payerId !== user.id) {
     await createNotification({

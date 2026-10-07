@@ -146,5 +146,6 @@ export const groupExpenseCardSchema = z.object({
 })
 
 export const groupSharePaySchema = z.object({
+  accountId: z.string().uuid().optional(),
   note: z.string().trim().max(240).optional().default('')
 })

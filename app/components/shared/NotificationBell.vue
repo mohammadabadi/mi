@@ -12,6 +12,7 @@ const open = ref(false)
 const markingId = ref('')
 const panelRef = ref<HTMLElement | null>(null)
 const buttonRef = ref<HTMLButtonElement | null>(null)
+const panelStyle = ref<Record<string, string>>({})
 
 const { data, pending, refresh } = useFetch('/api/notifications', {
   credentials: 'include',
@@ -42,9 +43,28 @@ async function markAsRead(notification: NotificationItem) {
   }
 }
 
+function updatePanelPosition() {
+  if (!import.meta.client || !buttonRef.value) return
+  const rect = buttonRef.value.getBoundingClientRect()
+  const margin = 12
+  const width = Math.min(360, window.innerWidth - margin * 2)
+  const right = Math.max(margin, window.innerWidth - rect.right)
+  const maxRight = Math.max(margin, window.innerWidth - width - margin)
+
+  panelStyle.value = {
+    position: 'fixed',
+    top: `${rect.bottom + 10}px`,
+    right: `${Math.min(right, maxRight)}px`,
+    width: `${width}px`
+  }
+}
+
 function toggleOpen() {
   open.value = !open.value
-  if (open.value) void refresh()
+  if (open.value) {
+    updatePanelPosition()
+    void refresh()
+  }
 }
 
 function refreshNotifications() {
@@ -59,10 +79,14 @@ function closeOnOutsideClick(event: MouseEvent) {
 
 onMounted(() => {
   document.addEventListener('click', closeOnOutsideClick)
+  window.addEventListener('resize', updatePanelPosition)
+  window.addEventListener('scroll', updatePanelPosition, true)
 })
 
 onBeforeUnmount(() => {
   document.removeEventListener('click', closeOnOutsideClick)
+  window.removeEventListener('resize', updatePanelPosition)
+  window.removeEventListener('scroll', updatePanelPosition, true)
 })
 </script>
 
@@ -85,7 +109,8 @@ onBeforeUnmount(() => {
       <div
         v-if="open"
         ref="panelRef"
-        class="absolute left-0 top-[calc(100%+10px)] z-50 w-[min(360px,calc(100vw-24px))] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/12"
+        class="z-[70] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/12"
+        :style="panelStyle"
       >
         <div class="flex items-center justify-between gap-3 border-b border-slate-100 bg-slate-50 px-4 py-3">
           <div>

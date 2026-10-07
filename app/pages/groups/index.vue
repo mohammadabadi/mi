@@ -39,6 +39,8 @@ const form = reactive({ name: '', description: '' })
 const loading = ref(false)
 const error = ref('')
 const invitationAction = reactive<{ id: string; type: InvitationAction | '' }>({ id: '', type: '' })
+const newGroupSection = ref<HTMLElement | null>(null)
+const groupNameInput = ref<HTMLInputElement | null>(null)
 
 const tabs = computed(() => [
   { key: 'groups' as const, label: 'گروه‌ها', icon: 'i-lucide-users-round', badge: groups.value.length },
@@ -56,6 +58,15 @@ function panelClass(panel: ActivePanel) {
 
 function groupInitial(name: string) {
   return name.trim().slice(0, 1) || 'گ'
+}
+
+function openNewGroupPanel() {
+  activePanel.value = 'new'
+  error.value = ''
+  nextTick(() => {
+    newGroupSection.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    groupNameInput.value?.focus({ preventScroll: true })
+  })
 }
 
 async function refreshAll() {
@@ -118,7 +129,7 @@ async function rejectInvitation(id: string) {
             <h1 class="mt-1 text-2xl font-black">گروه‌ها</h1>
             <p class="mt-2 max-w-xl text-sm leading-6 text-white/78">دعوت‌ها، سهم‌ها و پرداخت‌های گروهی را از همین صفحه دنبال کن. اعلان‌ها از هدر همیشه در دسترس‌اند.</p>
           </div>
-          <button type="button" class="inline-flex size-11 shrink-0 items-center justify-center rounded-2xl bg-white/12 ring-1 ring-white/20 transition active:scale-95" aria-label="ساخت گروه جدید" @click="activePanel = 'new'">
+          <button type="button" class="inline-flex size-11 shrink-0 items-center justify-center rounded-2xl bg-white/12 ring-1 ring-white/20 transition active:scale-95" aria-label="ساخت گروه جدید" @click="openNewGroupPanel">
             <UIcon name="i-lucide-plus" class="size-5" />
           </button>
         </div>
@@ -185,7 +196,7 @@ async function rejectInvitation(id: string) {
               <h2 class="text-lg font-black text-slate-950">گروه‌های من</h2>
               <p class="mt-1 text-xs font-bold text-slate-500">برای دیدن خرج‌ها وارد گروه شو.</p>
             </div>
-            <button type="button" class="btn-secondary hidden min-h-10 px-3 py-2 text-sm md:inline-flex" @click="activePanel = 'new'">
+            <button type="button" class="btn-secondary hidden min-h-10 px-3 py-2 text-sm md:inline-flex" @click="openNewGroupPanel">
               <UIcon name="i-lucide-plus" class="btn-icon" />
               <span>گروه جدید</span>
             </button>
@@ -223,7 +234,7 @@ async function rejectInvitation(id: string) {
           <div v-else class="mt-4 rounded-2xl border border-dashed border-teal-200 bg-teal-50/55 p-5 text-center">
             <UIcon name="i-lucide-users-round" class="mx-auto size-8 text-teal-700" />
             <p class="mt-2 text-sm font-black text-slate-950">هنوز گروهی نداری.</p>
-            <button type="button" class="btn-primary mt-4 w-full sm:w-auto" @click="activePanel = 'new'">
+            <button type="button" class="btn-primary mt-4 w-full sm:w-auto" @click="openNewGroupPanel">
               <UIcon name="i-lucide-plus" class="btn-icon" />
               <span>ساخت اولین گروه</span>
             </button>
@@ -264,12 +275,12 @@ async function rejectInvitation(id: string) {
             <p v-else class="mt-4 rounded-2xl bg-slate-50 p-4 text-center text-sm font-bold text-slate-500">دعوت فعالی نداری.</p>
           </section>
 
-          <section class="mobile-card p-4" :class="panelClass('new')">
+          <section ref="newGroupSection" class="mobile-card p-4 scroll-mt-24" :class="panelClass('new')">
             <h2 class="text-lg font-black text-slate-950">ساخت گروه جدید</h2>
             <form class="mt-4 space-y-3" @submit.prevent="createGroup">
               <label class="block">
                 <span class="text-sm font-medium">نام گروه</span>
-                <input v-model="form.name" class="field mt-2" placeholder="مثلا قهوه‌های شرکت" required>
+                <input ref="groupNameInput" v-model="form.name" class="field mt-2" placeholder="مثلا قهوه‌های شرکت" required>
               </label>
               <label class="block">
                 <span class="text-sm font-medium">توضیح</span>

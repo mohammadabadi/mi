@@ -68,6 +68,14 @@ a {
   touch-action: manipulation;
 }
 
+:where(a[href], button:not(:disabled), [role="button"], summary, label[for], .custom-select-trigger, .custom-select-option, .jalali-day, .jalali-calendar-nav, .jalali-today-button, .icon-choice, .filter-toggle) {
+  cursor: pointer;
+}
+
+:where(button:disabled, [aria-disabled="true"]) {
+  cursor: not-allowed;
+}
+
 .ltr {
   direction: ltr;
 }

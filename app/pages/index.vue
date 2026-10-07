@@ -94,10 +94,10 @@ const trustItems = [
             <span class="truncate">اپ مالی فارسی، شخصی، گروهی و قابل نصب</span>
           </div>
 
-          <h1 class="text-[1.65rem] font-black leading-9 sm:text-3xl sm:leading-tight lg:text-4xl">
+          <h1 class="text-[1.65rem] font-black leading-9 sm:text-xl sm:leading-tight lg:text-2xl">
             میفین؛ دخل‌وخرجت را روشن و قابل پیگیری کن.
           </h1>
-          <p class="mt-3 max-w-2xl text-sm font-bold leading-7 text-teal-50/90 sm:mt-5 sm:text-base sm:leading-8">
+          <p class="mt-3 max-w-2xl text-sm  leading-7 text-teal-50/90 sm:mt-5 sm:text-base sm:leading-8">
             از حساب‌های شخصی تا خرج‌های مشترک، از گزارش‌های مالی تا دنگ دوستانه؛ همه چیز در یک تجربه موبایل‌فرست و قابل اعتماد.
           </p>
 
@@ -201,7 +201,7 @@ const trustItems = [
     <section class="space-y-3 sm:space-y-5">
       <div class="max-w-3xl">
         <p class="text-sm font-black text-teal-700">امکانات اصلی</p>
-        <h2 class="mt-2 text-xl font-black leading-8 text-slate-950 sm:text-3xl sm:leading-10">هر چیزی که برای مدیریت مالی روزمره لازم داری</h2>
+        <h2 class="mt-2 text-base font-black leading-8 text-slate-950 sm:text-2xl sm:leading-10">هر چیزی که برای مدیریت مالی روزمره لازم داری</h2>
         <p class="mt-2 text-sm leading-7 text-slate-600 sm:mt-3 sm:leading-8">میفین فقط دفترچه خرج نیست؛ ساختار حساب، دسته‌بندی، گزارش، گروه و اعلان را کنار هم می‌آورد.</p>
       </div>
 
@@ -219,7 +219,7 @@ const trustItems = [
     <section class="grid gap-4 rounded-[20px] border border-teal-100 bg-white p-4 shadow-sm sm:gap-5 sm:rounded-[24px] sm:p-7 lg:grid-cols-[0.88fr_1.12fr] lg:items-center">
       <div>
         <p class="text-sm font-black text-teal-700">مدیریت خرج گروهی</p>
-        <h2 class="mt-2 text-xl font-black leading-8 text-slate-950 sm:text-3xl sm:leading-10">برای قهوه، سفر، خانه و هر خرج مشترک</h2>
+        <h2 class="mt-2 text-base font-black leading-8 text-slate-950 sm:text-2xl sm:leading-10">برای قهوه، سفر، خانه و هر خرج مشترک</h2>
         <p class="mt-2 text-sm font-medium leading-7 text-slate-600 sm:mt-3 sm:leading-8">
           در میفین خرج گروهی فقط یک یادداشت ساده نیست؛ هر خرج پرداخت‌کننده، افراد سهیم، وضعیت هر نفر و مانده تسویه را مشخص دارد.
         </p>
@@ -236,7 +236,7 @@ const trustItems = [
       <div class="grid gap-4 sm:gap-6 lg:grid-cols-[0.75fr_1.25fr] lg:items-center">
         <div>
           <p class="text-sm font-black text-amber-300">مسیر کار</p>
-          <h2 class="mt-2 text-xl font-black leading-8 sm:text-3xl sm:leading-10">از ثبت حساب تا گزارش، بدون پیچیدگی</h2>
+          <h2 class="mt-2 text-base font-black leading-8 sm:text-2xl sm:leading-10">از ثبت حساب تا گزارش، بدون پیچیدگی</h2>
         </div>
         <div class="grid gap-3 sm:grid-cols-3">
           <article v-for="(step, index) in steps" :key="step.title" class="rounded-2xl bg-white p-3 text-slate-950 sm:p-4">
@@ -264,7 +264,7 @@ const trustItems = [
     <section class="overflow-hidden rounded-[20px] bg-[#0f766e] p-4 text-white shadow-xl shadow-teal-900/15 sm:rounded-[24px] sm:p-7">
       <div class="grid gap-4 sm:gap-5 lg:grid-cols-[1fr_auto] lg:items-center">
         <div>
-          <h2 class="text-xl font-black leading-8 sm:text-3xl sm:leading-10">آماده‌ای دخل‌وخرجت را شفاف‌تر ببینی؟</h2>
+          <h2 class="text-base font-black leading-8 sm:text-2xl sm:leading-10">آماده‌ای دخل‌وخرجت را شفاف‌تر ببینی؟</h2>
           <p class="mt-2 max-w-2xl text-sm font-bold leading-7 text-teal-50 sm:mt-3">ثبت‌نام کن، حساب‌هایت را بساز و از همان روز اول تصویر دقیق‌تری از پول، خرج‌ها و دنگ‌ها داشته باش.</p>
         </div>
         <div class="grid gap-2 sm:flex">
