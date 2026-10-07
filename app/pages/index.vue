@@ -85,111 +85,111 @@ const trustItems = [
 </script>
 
 <template>
-  <div class="space-y-16 pb-12">
-    <section class="overflow-hidden rounded-[28px] bg-[#092f2b] text-white shadow-2xl shadow-teal-900/20">
-      <div class="grid gap-8 p-5 sm:p-7 lg:grid-cols-[0.92fr_1.08fr] lg:items-center lg:p-10">
+  <div class="space-y-8 pb-8 sm:space-y-12 sm:pb-12 lg:space-y-16">
+    <section class="overflow-hidden rounded-[20px] bg-[#092f2b] text-white shadow-2xl shadow-teal-900/20 sm:rounded-[28px]">
+      <div class="grid gap-5 p-4 sm:gap-8 sm:p-7 lg:grid-cols-[0.92fr_1.08fr] lg:items-center lg:p-10">
         <div class="min-w-0">
-          <div class="mb-5 inline-flex items-center gap-2 rounded-full bg-white px-3 py-2 text-xs font-black text-teal-900 shadow-lg shadow-black/10">
-            <img src="/pwa-icon.svg" alt="" class="size-6 rounded-lg">
-            <span>اپ مالی فارسی، شخصی، گروهی و قابل نصب</span>
+          <div class="mb-4 inline-flex max-w-full items-center gap-2 rounded-full bg-white px-2.5 py-1.5 text-[11px] font-black text-teal-900 shadow-lg shadow-black/10 sm:mb-5 sm:px-3 sm:py-2 sm:text-xs">
+            <img src="/pwa-icon.svg" alt="" class="size-5 rounded-lg sm:size-6">
+            <span class="truncate">اپ مالی فارسی، شخصی، گروهی و قابل نصب</span>
           </div>
 
-          <h1 class="text-2xl font-black leading-tight sm:text-3xl lg:text-4xl">
+          <h1 class="text-[1.65rem] font-black leading-9 sm:text-3xl sm:leading-tight lg:text-4xl">
             میفین؛ دخل‌وخرجت را روشن و قابل پیگیری کن.
           </h1>
-          <p class="mt-5 max-w-2xl text-md font-bold leading-8 text-teal-50/90 sm:text-base">
+          <p class="mt-3 max-w-2xl text-sm font-bold leading-7 text-teal-50/90 sm:mt-5 sm:text-base sm:leading-8">
             از حساب‌های شخصی تا خرج‌های مشترک، از گزارش‌های مالی تا دنگ دوستانه؛ همه چیز در یک تجربه موبایل‌فرست و قابل اعتماد.
           </p>
 
-          <div class="mt-7 grid gap-3 sm:flex">
-            <NuxtLink to="/register" class="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-[#f7c65f] px-5 font-black text-slate-950 shadow-lg shadow-black/15 transition active:translate-y-px">
+          <div class="mt-5 grid gap-2 sm:mt-7 sm:flex sm:gap-3">
+            <NuxtLink to="/register" class="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#f7c65f] px-4 text-sm font-black text-slate-950 shadow-lg shadow-black/15 transition active:translate-y-px sm:min-h-12 sm:px-5 sm:text-base">
               <UIcon name="i-lucide-user-plus" class="btn-icon" />
               <span>شروع رایگان</span>
             </NuxtLink>
-            <NuxtLink to="/login" class="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-white/10 px-5 font-black text-white ring-1 ring-white/20 transition active:translate-y-px">
+            <NuxtLink to="/login" class="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-white/10 px-4 text-sm font-black text-white ring-1 ring-white/20 transition active:translate-y-px sm:min-h-12 sm:px-5 sm:text-base">
               <UIcon name="i-lucide-log-in" class="btn-icon" />
               <span>ورود به حساب</span>
             </NuxtLink>
           </div>
 
-          <div class="mt-7 grid grid-cols-3 gap-2">
-            <div class="rounded-2xl bg-white/10 p-3 ring-1 ring-white/14">
-              <strong class="block text-xl font-black">PWA</strong>
-              <span class="mt-1 block text-xs font-bold text-teal-50/75">نصب روی گوشی</span>
+          <div class="mt-5 grid grid-cols-3 gap-2 sm:mt-7">
+            <div class="rounded-2xl bg-white/10 p-2.5 ring-1 ring-white/14 sm:p-3">
+              <strong class="block text-base font-black sm:text-xl">PWA</strong>
+              <span class="mt-1 block text-[11px] font-bold leading-4 text-teal-50/75 sm:text-xs">نصب روی گوشی</span>
             </div>
-            <div class="rounded-2xl bg-white/10 p-3 ring-1 ring-white/14">
-              <strong class="block text-xl font-black">گروه</strong>
-              <span class="mt-1 block text-xs font-bold text-teal-50/75">دنگ و تسویه</span>
+            <div class="rounded-2xl bg-white/10 p-2.5 ring-1 ring-white/14 sm:p-3">
+              <strong class="block text-base font-black sm:text-xl">گروه</strong>
+              <span class="mt-1 block text-[11px] font-bold leading-4 text-teal-50/75 sm:text-xs">دنگ و تسویه</span>
             </div>
-            <div class="rounded-2xl bg-white/10 p-3 ring-1 ring-white/14">
-              <strong class="block text-xl font-black">گزارش</strong>
-              <span class="mt-1 block text-xs font-bold text-teal-50/75">تصمیم بهتر</span>
+            <div class="rounded-2xl bg-white/10 p-2.5 ring-1 ring-white/14 sm:p-3">
+              <strong class="block text-base font-black sm:text-xl">گزارش</strong>
+              <span class="mt-1 block text-[11px] font-bold leading-4 text-teal-50/75 sm:text-xs">تصمیم بهتر</span>
             </div>
           </div>
         </div>
 
-        <div class="rounded-[30px] bg-[#f6faf8] p-3 text-slate-950 shadow-2xl shadow-black/20 ring-1 ring-white/20">
-          <div class="overflow-hidden rounded-[24px] border border-teal-100 bg-white">
-            <div class="bg-[#0f766e] p-4 text-white">
+        <div class="mx-auto w-full max-w-md rounded-[22px] bg-[#f6faf8] p-2 text-slate-950 shadow-2xl shadow-black/20 ring-1 ring-white/20 sm:rounded-[30px] sm:p-3 lg:max-w-none">
+          <div class="overflow-hidden rounded-[18px] border border-teal-100 bg-white sm:rounded-[24px]">
+            <div class="bg-[#0f766e] p-3 text-white sm:p-4">
               <div class="flex items-center justify-between gap-3">
                 <div class="flex items-center gap-2">
-                  <img src="/pwa-icon.svg" alt="" class="size-10 rounded-xl bg-white shadow-lg">
-                  <span class="font-black">داشبورد میفین</span>
+                  <img src="/pwa-icon.svg" alt="" class="size-8 rounded-xl bg-white shadow-lg sm:size-10">
+                  <span class="text-sm font-black sm:text-base">داشبورد میفین</span>
                 </div>
-                <span class="rounded-full bg-white px-3 py-1 text-xs font-black text-teal-900">مهر ۱۴۰۵</span>
+                <span class="rounded-full bg-white px-2.5 py-1 text-[11px] font-black text-teal-900 sm:px-3 sm:text-xs">مهر ۱۴۰۵</span>
               </div>
-              <div class="mt-6">
-                <span class="text-sm font-bold text-teal-50">موجودی کل</span>
-                <strong class="money-value mt-1 block text-3xl font-black text-white">۱۲۵٬۴۰۰٬۰۰۰ ریال</strong>
+              <div class="mt-4 sm:mt-6">
+                <span class="text-xs font-bold text-teal-50 sm:text-sm">موجودی کل</span>
+                <strong class="money-value mt-1 block text-2xl font-black text-white sm:text-3xl">۱۲۵٬۴۰۰٬۰۰۰ ریال</strong>
               </div>
-              <div class="mt-5 grid grid-cols-2 gap-3">
-                <div class="rounded-2xl bg-white p-3 text-slate-950">
+              <div class="mt-4 grid grid-cols-2 gap-2 sm:mt-5 sm:gap-3">
+                <div class="rounded-xl bg-white p-2.5 text-slate-950 sm:rounded-2xl sm:p-3">
                   <span class="text-xs font-black text-emerald-700">درآمد ماه</span>
-                  <strong class="money-value mt-1 block text-base font-black text-emerald-700">+۳۵٬۰۰۰٬۰۰۰</strong>
+                  <strong class="money-value mt-1 block text-sm font-black text-emerald-700 sm:text-base">+۳۵٬۰۰۰٬۰۰۰</strong>
                 </div>
-                <div class="rounded-2xl bg-white p-3 text-slate-950">
+                <div class="rounded-xl bg-white p-2.5 text-slate-950 sm:rounded-2xl sm:p-3">
                   <span class="text-xs font-black text-rose-700">هزینه ماه</span>
-                  <strong class="money-value mt-1 block text-base font-black text-rose-700">-۱۸٬۵۰۰٬۰۰۰</strong>
+                  <strong class="money-value mt-1 block text-sm font-black text-rose-700 sm:text-base">-۱۸٬۵۰۰٬۰۰۰</strong>
                 </div>
               </div>
             </div>
 
-            <div class="space-y-3 bg-[#f6faf8] p-4">
-              <div class="rounded-2xl border border-amber-100 bg-white p-4 shadow-sm">
+            <div class="space-y-2 bg-[#f6faf8] p-3 sm:space-y-3 sm:p-4">
+              <div class="rounded-2xl border border-amber-100 bg-white p-3 shadow-sm sm:p-4">
                 <div class="flex items-start justify-between gap-3">
                   <div>
-                    <h3 class="font-black text-slate-950">قهوه‌های شرکت</h3>
+                    <h3 class="text-sm font-black text-slate-950 sm:text-base">قهوه‌های شرکت</h3>
                     <p class="mt-1 text-xs font-bold text-slate-500">خرج گروهی · ۳ نفر سهیم</p>
                   </div>
-                  <span class="rounded-full bg-amber-50 px-2.5 py-1 text-xs font-black text-amber-700">منتظر پرداخت</span>
+                  <span class="rounded-full bg-amber-50 px-2 py-1 text-[11px] font-black text-amber-700 sm:px-2.5 sm:text-xs">منتظر پرداخت</span>
                 </div>
-                <div class="mt-4 flex items-center justify-between rounded-xl bg-rose-50 p-3">
+                <div class="mt-3 grid gap-1 rounded-xl bg-rose-50 p-2.5 sm:mt-4 sm:flex sm:items-center sm:justify-between sm:p-3">
                   <span class="text-xs font-black text-rose-700">مانده دنگ‌ها</span>
-                  <span class="money-value font-black text-rose-700">۱٬۲۵۰٬۰۰۰ ریال</span>
+                  <span class="money-value text-sm font-black text-rose-700 sm:text-base">۱٬۲۵۰٬۰۰۰ ریال</span>
                 </div>
               </div>
 
               <div class="grid grid-cols-3 gap-2">
-                <div class="rounded-2xl bg-white p-3 text-center shadow-sm">
-                  <UIcon name="i-lucide-receipt-text" class="mx-auto size-5 text-teal-700" />
-                  <span class="mt-2 block text-xs font-black text-slate-700">ثبت سریع</span>
+                <div class="rounded-xl bg-white p-2 text-center shadow-sm sm:rounded-2xl sm:p-3">
+                  <UIcon name="i-lucide-receipt-text" class="mx-auto size-4 text-teal-700 sm:size-5" />
+                  <span class="mt-1.5 block text-[11px] font-black text-slate-700 sm:mt-2 sm:text-xs">ثبت سریع</span>
                 </div>
-                <div class="rounded-2xl bg-white p-3 text-center shadow-sm">
-                  <UIcon name="i-lucide-chart-no-axes-combined" class="mx-auto size-5 text-sky-700" />
-                  <span class="mt-2 block text-xs font-black text-slate-700">گزارش</span>
+                <div class="rounded-xl bg-white p-2 text-center shadow-sm sm:rounded-2xl sm:p-3">
+                  <UIcon name="i-lucide-chart-no-axes-combined" class="mx-auto size-4 text-sky-700 sm:size-5" />
+                  <span class="mt-1.5 block text-[11px] font-black text-slate-700 sm:mt-2 sm:text-xs">گزارش</span>
                 </div>
-                <div class="rounded-2xl bg-white p-3 text-center shadow-sm">
-                  <UIcon name="i-lucide-bell-ring" class="mx-auto size-5 text-amber-700" />
-                  <span class="mt-2 block text-xs font-black text-slate-700">اعلان</span>
+                <div class="rounded-xl bg-white p-2 text-center shadow-sm sm:rounded-2xl sm:p-3">
+                  <UIcon name="i-lucide-bell-ring" class="mx-auto size-4 text-amber-700 sm:size-5" />
+                  <span class="mt-1.5 block text-[11px] font-black text-slate-700 sm:mt-2 sm:text-xs">اعلان</span>
                 </div>
               </div>
 
               <div class="rounded-2xl border border-teal-100 bg-teal-50 p-3">
                 <div class="flex items-center gap-2">
-                  <span class="inline-flex size-9 items-center justify-center rounded-xl bg-white text-teal-700 shadow-sm">
-                    <UIcon name="i-lucide-shield-check" class="size-5" />
+                  <span class="inline-flex size-8 items-center justify-center rounded-xl bg-white text-teal-700 shadow-sm sm:size-9">
+                    <UIcon name="i-lucide-shield-check" class="size-4 sm:size-5" />
                   </span>
-                  <p class="text-xs font-black leading-6 text-teal-950">هر کاربر فقط داده‌های خودش و گروه‌هایی را می‌بیند که عضو آن‌هاست.</p>
+                  <p class="text-[11px] font-black leading-5 text-teal-950 sm:text-xs sm:leading-6">هر کاربر فقط داده‌های خودش و گروه‌هایی را می‌بیند که عضو آن‌هاست.</p>
                 </div>
               </div>
             </div>
@@ -198,53 +198,53 @@ const trustItems = [
       </div>
     </section>
 
-    <section class="space-y-5">
+    <section class="space-y-3 sm:space-y-5">
       <div class="max-w-3xl">
         <p class="text-sm font-black text-teal-700">امکانات اصلی</p>
-        <h2 class="mt-2 text-2xl font-black leading-10 text-slate-950 sm:text-3xl">هر چیزی که برای مدیریت مالی روزمره لازم داری</h2>
-        <p class="mt-3 text-sm leading-8 text-slate-600">میفین فقط دفترچه خرج نیست؛ ساختار حساب، دسته‌بندی، گزارش، گروه و اعلان را کنار هم می‌آورد.</p>
+        <h2 class="mt-2 text-xl font-black leading-8 text-slate-950 sm:text-3xl sm:leading-10">هر چیزی که برای مدیریت مالی روزمره لازم داری</h2>
+        <p class="mt-2 text-sm leading-7 text-slate-600 sm:mt-3 sm:leading-8">میفین فقط دفترچه خرج نیست؛ ساختار حساب، دسته‌بندی، گزارش، گروه و اعلان را کنار هم می‌آورد.</p>
       </div>
 
       <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        <article v-for="feature in featureCards" :key="feature.title" class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-xl hover:shadow-teal-900/8">
-          <span class="inline-flex size-12 items-center justify-center rounded-2xl" :class="feature.accent">
+        <article v-for="feature in featureCards" :key="feature.title" class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-xl hover:shadow-teal-900/8 sm:p-5">
+          <span class="inline-flex size-10 items-center justify-center rounded-2xl sm:size-12" :class="feature.accent">
             <UIcon :name="feature.icon" class="size-5" />
           </span>
-          <h3 class="mt-4 font-black text-slate-950">{{ feature.title }}</h3>
-          <p class="mt-2 text-sm font-medium leading-7 text-slate-600">{{ feature.text }}</p>
+          <h3 class="mt-3 text-sm font-black text-slate-950 sm:mt-4 sm:text-base">{{ feature.title }}</h3>
+          <p class="mt-2 text-xs font-medium leading-6 text-slate-600 sm:text-sm sm:leading-7">{{ feature.text }}</p>
         </article>
       </div>
     </section>
 
-    <section class="grid gap-5 rounded-[24px] border border-teal-100 bg-white p-5 shadow-sm sm:p-7 lg:grid-cols-[0.88fr_1.12fr] lg:items-center">
+    <section class="grid gap-4 rounded-[20px] border border-teal-100 bg-white p-4 shadow-sm sm:gap-5 sm:rounded-[24px] sm:p-7 lg:grid-cols-[0.88fr_1.12fr] lg:items-center">
       <div>
         <p class="text-sm font-black text-teal-700">مدیریت خرج گروهی</p>
-        <h2 class="mt-2 text-2xl font-black leading-10 text-slate-950 sm:text-3xl">برای قهوه، سفر، خانه و هر خرج مشترک</h2>
-        <p class="mt-3 text-sm font-medium leading-8 text-slate-600">
+        <h2 class="mt-2 text-xl font-black leading-8 text-slate-950 sm:text-3xl sm:leading-10">برای قهوه، سفر، خانه و هر خرج مشترک</h2>
+        <p class="mt-2 text-sm font-medium leading-7 text-slate-600 sm:mt-3 sm:leading-8">
           در میفین خرج گروهی فقط یک یادداشت ساده نیست؛ هر خرج پرداخت‌کننده، افراد سهیم، وضعیت هر نفر و مانده تسویه را مشخص دارد.
         </p>
       </div>
       <div class="grid gap-3 sm:grid-cols-2">
-        <div v-for="item in groupHighlights" :key="item" class="rounded-2xl border border-teal-100 bg-[#f7fcfa] p-4">
-          <UIcon name="i-lucide-check-circle" class="size-5 text-teal-700" />
-          <p class="mt-3 text-sm font-black leading-7 text-slate-800">{{ item }}</p>
+        <div v-for="item in groupHighlights" :key="item" class="rounded-2xl border border-teal-100 bg-[#f7fcfa] p-3 sm:p-4">
+          <UIcon name="i-lucide-check-circle" class="size-4 text-teal-700 sm:size-5" />
+          <p class="mt-2 text-xs font-black leading-6 text-slate-800 sm:mt-3 sm:text-sm sm:leading-7">{{ item }}</p>
         </div>
       </div>
     </section>
 
-    <section class="rounded-[24px] bg-[#101828] p-5 text-white shadow-xl shadow-slate-900/15 sm:p-7">
-      <div class="grid gap-6 lg:grid-cols-[0.75fr_1.25fr] lg:items-center">
+    <section class="rounded-[20px] bg-[#101828] p-4 text-white shadow-xl shadow-slate-900/15 sm:rounded-[24px] sm:p-7">
+      <div class="grid gap-4 sm:gap-6 lg:grid-cols-[0.75fr_1.25fr] lg:items-center">
         <div>
           <p class="text-sm font-black text-amber-300">مسیر کار</p>
-          <h2 class="mt-2 text-2xl font-black leading-10 sm:text-3xl">از ثبت حساب تا گزارش، بدون پیچیدگی</h2>
+          <h2 class="mt-2 text-xl font-black leading-8 sm:text-3xl sm:leading-10">از ثبت حساب تا گزارش، بدون پیچیدگی</h2>
         </div>
         <div class="grid gap-3 sm:grid-cols-3">
-          <article v-for="(step, index) in steps" :key="step.title" class="rounded-2xl bg-white p-4 text-slate-950">
+          <article v-for="(step, index) in steps" :key="step.title" class="rounded-2xl bg-white p-3 text-slate-950 sm:p-4">
             <div class="flex items-center justify-between">
               <span class="inline-flex size-9 items-center justify-center rounded-xl bg-amber-100 text-sm font-black text-amber-900">{{ number(index + 1) }}</span>
               <UIcon :name="step.icon" class="size-5 text-teal-700" />
             </div>
-            <h3 class="mt-4 font-black">{{ step.title }}</h3>
+            <h3 class="mt-3 text-sm font-black sm:mt-4 sm:text-base">{{ step.title }}</h3>
             <p class="mt-2 text-xs font-bold leading-6 text-slate-600">{{ step.text }}</p>
           </article>
         </div>
@@ -261,18 +261,18 @@ const trustItems = [
       </article>
     </section> -->
 
-    <section class="overflow-hidden rounded-[24px] bg-[#0f766e] p-5 text-white shadow-xl shadow-teal-900/15 sm:p-7">
-      <div class="grid gap-5 lg:grid-cols-[1fr_auto] lg:items-center">
+    <section class="overflow-hidden rounded-[20px] bg-[#0f766e] p-4 text-white shadow-xl shadow-teal-900/15 sm:rounded-[24px] sm:p-7">
+      <div class="grid gap-4 sm:gap-5 lg:grid-cols-[1fr_auto] lg:items-center">
         <div>
-          <h2 class="text-2xl font-black leading-10 sm:text-3xl">آماده‌ای دخل‌وخرجت را شفاف‌تر ببینی؟</h2>
-          <p class="mt-3 max-w-2xl text-sm font-bold leading-7 text-teal-50">ثبت‌نام کن، حساب‌هایت را بساز و از همان روز اول تصویر دقیق‌تری از پول، خرج‌ها و دنگ‌ها داشته باش.</p>
+          <h2 class="text-xl font-black leading-8 sm:text-3xl sm:leading-10">آماده‌ای دخل‌وخرجت را شفاف‌تر ببینی؟</h2>
+          <p class="mt-2 max-w-2xl text-sm font-bold leading-7 text-teal-50 sm:mt-3">ثبت‌نام کن، حساب‌هایت را بساز و از همان روز اول تصویر دقیق‌تری از پول، خرج‌ها و دنگ‌ها داشته باش.</p>
         </div>
         <div class="grid gap-2 sm:flex">
-          <NuxtLink to="/register" class="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-white px-5 font-black text-teal-900">
+          <NuxtLink to="/register" class="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-white px-4 text-sm font-black text-teal-900 sm:min-h-12 sm:px-5 sm:text-base">
             <UIcon name="i-lucide-user-plus" class="btn-icon" />
             <span>ساخت حساب</span>
           </NuxtLink>
-          <NuxtLink to="/login" class="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-teal-950/25 px-5 font-black text-white ring-1 ring-white/24">
+          <NuxtLink to="/login" class="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-teal-950/25 px-4 text-sm font-black text-white ring-1 ring-white/24 sm:min-h-12 sm:px-5 sm:text-base">
             <UIcon name="i-lucide-log-in" class="btn-icon" />
             <span>ورود</span>
           </NuxtLink>
