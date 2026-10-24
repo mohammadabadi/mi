@@ -201,7 +201,7 @@ const trustItems = [
     <section class="space-y-3 sm:space-y-5">
       <div class="max-w-3xl">
         <p class="text-sm font-black text-teal-700">امکانات اصلی</p>
-        <h2 class="mt-2 text-base font-black leading-8 text-slate-950 sm:text-2xl sm:leading-10">هر چیزی که برای مدیریت مالی روزمره لازم داری</h2>
+        <h2 class="mt-2 text-basen font-black leading-8 text-slate-950 sm:text-2xl sm:leading-10">هر چیزی که برای مدیریت مالی روزمره لازم داری</h2>
         <p class="mt-2 text-sm leading-7 text-slate-600 sm:mt-3 sm:leading-8">میفین فقط دفترچه خرج نیست؛ ساختار حساب، دسته‌بندی، گزارش، گروه و اعلان را کنار هم می‌آورد.</p>
       </div>
 

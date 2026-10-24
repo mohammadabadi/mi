@@ -1,4 +1,4 @@
-const protectedRoutes = ['/dashboard', '/accounts', '/transactions', '/groups', '/categories', '/reports']
+const protectedRoutes = ['/dashboard', '/accounts', '/transactions', '/groups', '/categories', '/reports', '/admin']
 const guestRoutes = ['/login', '/register']
 
 export default defineNuxtRouteMiddleware(async (to) => {
@@ -14,5 +14,6 @@ export default defineNuxtRouteMiddleware(async (to) => {
   const user = data.value?.user
 
   if (isProtected && !user) return navigateTo('/login')
+  if (to.path.startsWith('/admin') && !user?.isAdmin) return navigateTo('/dashboard')
   if (isGuest && user) return navigateTo('/dashboard')
 })

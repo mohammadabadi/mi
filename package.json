@@ -6,6 +6,7 @@
     "dev": "nuxt dev",
     "build": "nuxt build",
     "preview": "nuxt preview",
+    "start": "node .output/server/index.mjs",
     "typecheck": "nuxt typecheck",
     "test": "nuxi prepare && vitest run",
     "db:generate": "drizzle-kit generate",

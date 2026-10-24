@@ -1,34 +1,22 @@
 import { drizzle } from 'drizzle-orm/postgres-js'
-import postgres from 'postgres'
 import * as schema from '../database/schema'
+import { assertDatabaseUrl, createPostgresClient } from '../database/connection'
 
-let client: postgres.Sql | undefined
+let client: ReturnType<typeof createPostgresClient> | undefined
 
 export function useDb() {
   const config = useRuntimeConfig()
-  const databaseUrl = config.databaseUrl
+  const databaseUrl = config.databaseUrl as string | undefined
 
-  const hasPlaceholderUrl = [
-    'USER:PASSWORD@HOST/DATABASE',
-    'PROJECT_REF',
-    'PASSWORD',
-    'REGION'
-  ].some((placeholder) => databaseUrl?.includes(placeholder))
-
-  if (!databaseUrl || hasPlaceholderUrl) {
+  try {
+    assertDatabaseUrl(databaseUrl)
+  } catch {
     throw createError({
       statusCode: 503,
-      statusMessage: 'DATABASE_URL تنظیم نشده است. مقدار واقعی اتصال Supabase/PostgreSQL را در فایل .env قرار دهید و migrationها را اجرا کنید.'
+      statusMessage: 'DATABASE_URL تنظیم نشده است. مقدار واقعی اتصال PostgreSQL را در فایل .env قرار دهید و migrationها را اجرا کنید.'
     })
   }
 
-  client ??= postgres(databaseUrl, {
-    max: 1,
-    prepare: false,
-    ssl: 'require',
-    connect_timeout: 10,
-    idle_timeout: 20,
-    max_lifetime: 60 * 30
-  })
+  client ??= createPostgresClient(databaseUrl)
   return drizzle(client, { schema })
 }

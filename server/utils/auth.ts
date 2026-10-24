@@ -87,7 +87,7 @@ export async function getCurrentUser(event: H3Event) {
     console.error('Database connection failed while reading current user.', error)
     throw createError({
       statusCode: 503,
-      statusMessage: 'Database is temporarily unreachable. Check the Supabase DATABASE_URL and network access.'
+      statusMessage: 'Database is temporarily unreachable. Check DATABASE_URL and network access.'
     })
   }
 
@@ -97,7 +97,8 @@ export async function getCurrentUser(event: H3Event) {
     id: session.userId,
     email: session.email,
     phone: session.phone,
-    name: session.name
+    name: session.name,
+    isAdmin: isAdminEmail(session.email)
   }
 }
 
@@ -106,6 +107,24 @@ export async function requireUser(event: H3Event) {
   if (!user) {
     throw createError({ statusCode: 401, statusMessage: 'ابتدا وارد حساب کاربری شوید.' })
   }
+  return user
+}
+
+export function isAdminEmail(email: string) {
+  const configuredEmails = (process.env.ADMIN_EMAILS || 'mohammadabadi.project@gmail.com')
+    .split(',')
+    .map((item) => item.trim().toLowerCase())
+    .filter(Boolean)
+
+  return configuredEmails.includes(email.trim().toLowerCase())
+}
+
+export async function requireAdmin(event: H3Event) {
+  const user = await requireUser(event)
+  if (!user.isAdmin) {
+    throw createError({ statusCode: 403, statusMessage: 'دسترسی مدیریت برای این حساب فعال نیست.' })
+  }
+
   return user
 }
 

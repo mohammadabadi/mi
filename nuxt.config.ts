@@ -12,7 +12,7 @@ export default defineNuxtConfig({
     }
   },
   nitro: {
-    preset: 'vercel'
+    preset: 'node-server'
   },
   pwa: {
     registerType: 'autoUpdate',
